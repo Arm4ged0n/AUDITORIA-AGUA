@@ -28,11 +28,11 @@
         const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>;
 
         const App = () => {
-            // DADOS TÉCNICOS EXTRAÍDOS DA FATURA (22 m3)
+            // DADOS TÉCNICOS EXTRAÍDOS DA FATURA
             const LEITURA_FECHAMENTO = 28.282; 
             const TAXA_FIXA = 39.32;
             const VALOR_AGUA_22M3 = 193.78; 
-            const PRECO_POR_M3 = VALOR_AGUA_22M3 / 22; // Aprox R$ 8,80
+            const PRECO_POR_M3 = VALOR_AGUA_22M3 / 22;
 
             const [logs, setLogs] = useState(() => {
                 const salvo = localStorage.getItem('sandro_final_v12');
@@ -52,7 +52,6 @@
                 const atual = logs.length > 0 ? logs[0].valor : LEITURA_FECHAMENTO;
                 const consumidoLitros = Math.round((atual - LEITURA_FECHAMENTO) * 1000);
                 
-                // Média Baseada na Fatura (733L/dia) ajustada pelo tempo real
                 let mediaL = 733; 
                 if (logs.length > 1) {
                     const diffM3 = logs[0].valor - logs[logs.length - 1].valor;
@@ -62,7 +61,6 @@
                     }
                 }
                 
-                // Proteção para projeção não bugar com pouca leitura
                 if (mediaL < 150) mediaL = 733;
 
                 const projecao30DiasM3 = (mediaL * 30) / 1000;
@@ -79,11 +77,14 @@
             }, [logs]);
 
             const salvar = () => {
-                if (!input) return;
+                if (!input || isNaN(parseFloat(input))) return;
+                
+                const agora = new Date();
                 const novo = {
                     id: Date.now(),
                     valor: parseFloat(input),
-                    desc: `Registado em ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR', {hour:'2d', minute:'2d'})}`,
+                    // Correção do erro '2d' para '2-digit'
+                    desc: `Registrado em ${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`,
                     timestamp: Date.now()
                 };
                 setLogs([novo, ...logs]);
@@ -105,7 +106,7 @@
                         <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
                     </div>
 
-                    {/* Projeção Financeira Realista */}
+                    {/* Projeção Financeira */}
                     <div className="w-full glass p-8 rounded-[2.5rem] border-l-4 border-l-blue-600 text-left relative overflow-hidden">
                         <div className="absolute right-6 top-6 opacity-10"><IconTrending /></div>
                         <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Estimativa Próxima Conta</p>
@@ -149,15 +150,21 @@
                     </div>
 
                     {/* Bloco de Entrada */}
-                    <div className="w-full bg-blue-600 p-1 rounded-[2.5rem] shadow-2xl">
-                        <div className="bg-black rounded-[2.4rem] p-6 space-y-4">
+                    <div className="w-full bg-blue-600 p-1 rounded-[2.4rem] shadow-2xl">
+                        <div className="bg-black rounded-[2.3rem] p-6 space-y-4">
                             <input 
-                                type="number" step="0.001" value={input}
+                                type="number" 
+                                inputMode="decimal"
+                                step="0.001" 
+                                value={input}
                                 onChange={e => setInput(e.target.value)}
                                 className="w-full bg-transparent text-center text-5xl font-black outline-none placeholder:opacity-10 text-white" 
                                 placeholder="28.XXX" 
                             />
-                            <button onClick={salvar} className="w-full bg-blue-600 text-black font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest active:scale-95 transition-all shadow-xl">
+                            <button 
+                                onClick={salvar} 
+                                className="w-full bg-blue-600 text-black font-black py-4 rounded-2xl uppercase text-[11px] tracking-widest active:scale-95 transition-all shadow-xl"
+                            >
                                 Registrar Medição
                             </button>
                         </div>
@@ -194,4 +201,3 @@
     </script>
 </body>
 </html>
-
