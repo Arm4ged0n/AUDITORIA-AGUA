@@ -193,17 +193,22 @@
         import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // Detecta se está rodando aqui no ambiente de desenvolvimento ou externamente (ex: Vercel)
+        const isCanvas = typeof __firebase_config !== 'undefined';
+        
+        let app, auth, db;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'hidrosandro-v2';
         const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        if (isCanvas) {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        }
 
         let currentUser = null;
         let historico = [];
-        // Configuração padrão baseada no seu input
         let config = {
             leituraInicial: 28.282,
             taxaFixa: 39.32,
@@ -214,40 +219,62 @@
         const $ = (id) => document.getElementById(id);
 
         async function init() {
-            try {
-                if (initialToken) await signInWithCustomToken(auth, initialToken);
-                else await signInAnonymously(auth);
-            } catch (err) { console.error("Erro Auth", err); }
+            if (isCanvas) {
+                try {
+                    if (initialToken) await signInWithCustomToken(auth, initialToken);
+                    else await signInAnonymously(auth);
+                } catch (err) { console.error("Erro Auth", err); }
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'consumo');
-                    onSnapshot(docRef, (snap) => {
-                        if (snap.exists()) {
-                            const data = snap.data();
-                            historico = data.leituras || [];
-                            if (data.config) {
-                                config = {
-                                    leituraInicial: parseFloat(data.config.leituraInicial) || 28.282,
-                                    taxaFixa: parseFloat(data.config.taxaFixa) || 39.32,
-                                    precoM3: parseFloat(data.config.precoM3) || 8.80,
-                                    dataInicio: data.config.dataInicio || '2026-02-05'
-                                };
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'consumo');
+                        onSnapshot(docRef, (snap) => {
+                            if (snap.exists()) {
+                                const data = snap.data();
+                                historico = data.leituras || [];
+                                if (data.config) {
+                                    config = {
+                                        leituraInicial: parseFloat(data.config.leituraInicial) || 28.282,
+                                        taxaFixa: parseFloat(data.config.taxaFixa) || 39.32,
+                                        precoM3: parseFloat(data.config.precoM3) || 8.80,
+                                        dataInicio: data.config.dataInicio || '2026-02-05'
+                                    };
+                                }
+                            } else {
+                                historico = [{ id: Date.now(), valor: 29.097, timestamp: Date.now() }];
+                                save();
                             }
-                        } else {
-                            // Se for a primeira vez, já cria um registro com a leitura atual que você informou
-                            historico = [{ id: Date.now(), valor: 29.097, timestamp: Date.now() }];
-                            save();
-                        }
-                        render();
-                        $('loading-screen').classList.add('hidden');
-                    }, (err) => {
-                        console.error("Erro Firestore", err);
-                        $('loading-screen').classList.add('hidden');
-                    });
+                            render();
+                            $('loading-screen').classList.add('hidden');
+                        }, (err) => {
+                            console.error("Erro Firestore", err);
+                            $('loading-screen').classList.add('hidden');
+                        });
+                    }
+                });
+            } else {
+                // MODO VERCEL (OFFLINE/LOCAL)
+                const localData = localStorage.getItem('hidrosandro_data');
+                if (localData) {
+                    const data = JSON.parse(localData);
+                    historico = data.leituras || [];
+                    if (data.config) {
+                        config = {
+                            leituraInicial: parseFloat(data.config.leituraInicial) || 28.282,
+                            taxaFixa: parseFloat(data.config.taxaFixa) || 39.32,
+                            precoM3: parseFloat(data.config.precoM3) || 8.80,
+                            dataInicio: data.config.dataInicio || '2026-02-05'
+                        };
+                    }
+                } else {
+                    historico = [{ id: Date.now(), valor: 29.097, timestamp: Date.now() }];
+                    save();
                 }
-            });
+                render();
+                // Oculta a tela de carregamento no Vercel
+                $('loading-screen').classList.add('hidden');
+            }
         }
 
         window.addLeitura = async () => {
@@ -257,12 +284,14 @@
                 historico.unshift({ id: Date.now(), valor: val, timestamp: Date.now() });
                 await save();
                 input.value = '';
+                if (!isCanvas) render(); // Atualiza a tela se estiver no Vercel
             }
         };
 
         window.deleteItem = async (id) => {
             historico = historico.filter(i => i.id !== id);
             await save();
+            if (!isCanvas) render();
         };
 
         window.toggleSettings = () => {
@@ -285,54 +314,50 @@
             };
             await save();
             toggleSettings();
+            if (!isCanvas) render();
         };
 
         async function save() {
-            if (!currentUser) return;
-            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'consumo');
-            await setDoc(docRef, { leituras: historico, config: config });
+            if (isCanvas && currentUser) {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'consumo');
+                await setDoc(docRef, { leituras: historico, config: config });
+            } else if (!isCanvas) {
+                // Salva no navegador do usuário no Vercel
+                localStorage.setItem('hidrosandro_data', JSON.stringify({ leituras: historico, config: config }));
+            }
         }
 
         function render() {
             const sorted = [...historico].sort((a, b) => b.timestamp - a.timestamp);
             const leituraAtual = sorted.length > 0 ? sorted[0].valor : config.leituraInicial;
             
-            // Cálculo do Consumo em m³ e Litros
-            // Se a leitura atual for muito maior que a inicial (ex: erro de digitação), limitamos para não quebrar a UI
             const diffM3 = Math.max(0, leituraAtual - config.leituraInicial);
             const totalLitros = Math.round(diffM3 * 1000);
             
-            // Ciclos de 100 Litros
             const numCiclos = Math.floor(totalLitros / 100);
             const litrosRestantes = totalLitros % 100;
             
-            // Tempo Decorrido
             const dataInicioObj = new Date(config.dataInicio + 'T00:00:00');
             const diasDecorridos = Math.max(1, (Date.now() - dataInicioObj.getTime()) / (1000 * 60 * 60 * 24));
             
-            // Médias e Projeções
             const mediaL = totalLitros / diasDecorridos;
             const proj30d = (mediaL * 30) / 1000;
             const custoEst = config.taxaFixa + (proj30d * config.precoM3);
 
-            // Atualização dos Cards de Topo
             $('m-ref').innerText = config.leituraInicial.toFixed(3).replace('.', ',');
             $('m-atual').innerText = leituraAtual.toFixed(3).replace('.', ',');
             $('m-total').innerText = totalLitros.toLocaleString('pt-BR');
             $('m-media').innerText = Math.round(mediaL).toLocaleString('pt-BR');
             $('m-custo').innerText = custoEst.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-            // Atualização do Visualizador de Ciclos
             $('cycle-total-litros').innerText = totalLitros.toLocaleString('pt-BR');
             $('cycle-count').innerText = numCiclos.toLocaleString('pt-BR');
             $('cycle-residue').innerText = Math.round(litrosRestantes);
             
-            // Barra de progresso (0 a 100%)
             $('cycle-progress-bar').style.width = `${litrosRestantes}%`;
             $('cycle-footer-text').innerText = `Ciclo #${(numCiclos + 1).toLocaleString('pt-BR')} em andamento`;
             $('cycle-faltam').innerText = `Faltam ${Math.round(100 - litrosRestantes)}L para o ciclo #${numCiclos + 2}`;
 
-            // Histórico
             $('history-list').innerHTML = sorted.map((item, idx) => `
                 <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 group hover:bg-white/10 transition-all">
                     <div class="flex gap-4 items-center">
@@ -359,4 +384,4 @@
         window.onload = init;
     </script>
 </body>
-</html>       
+</html>
