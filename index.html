@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaAudit - Auditoria e Projeção</title>
+    <title>AquaAudit - Auditoria de Ciclos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -50,100 +50,118 @@
             font-weight: bold;
         }
         .tank-container {
-            width: 60px;
-            height: 100px;
+            width: 70px;
+            height: 120px;
             background: #020617;
             border: 3px solid #334155;
             border-radius: 8px 8px 15px 15px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
         }
         .water-fill {
             position: absolute;
             bottom: 0;
             width: 100%;
             background: linear-gradient(to top, #0ea5e9, #38bdf8);
-            transition: height 0.5s ease-in-out;
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .water-wave {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 200%;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 40%;
+            animation: wave 3s infinite linear;
+        }
+        @keyframes wave {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-black text-sky-400 italic">AQUAAUDIT 2.0</h1>
-            <p class="text-slate-400 text-xs uppercase tracking-widest mt-2">Gestão de Consumo e Projeção Financeira</p>
+            <h1 class="text-4xl font-black text-sky-400 italic tracking-tighter">AQUAAUDIT 2.0</h1>
+            <p class="text-slate-400 text-[10px] uppercase tracking-[0.3em] mt-2 font-bold">Monitorização de Ciclos e Consumo Real</p>
         </header>
 
-        <!-- CONFIGURAÇÃO INICIAL DO CICLO -->
+        <!-- CONFIGURAÇÃO INICIAL -->
         <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 mb-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Leitura Base Fatura (6 dígitos)</label>
-                    <input type="number" id="baseInput" value="29700" class="w-full bg-slate-900 text-white text-2xl font-mono p-2 rounded-lg border border-slate-600 outline-none focus:border-sky-500">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Leitura Base (03/03: 29791)</label>
+                    <input type="number" id="baseInput" value="29791" class="w-full bg-slate-900 text-white text-2xl font-mono p-2 rounded-lg border border-slate-600 outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Data da Leitura CORSAN</label>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Data Início Ciclo</label>
                     <input type="date" id="baseDate" value="2026-03-03" class="w-full bg-slate-900 text-white p-3 rounded-lg border border-slate-600 outline-none focus:border-sky-500">
                 </div>
                 <button onclick="clearHistory()" class="bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[10px] font-black p-4 rounded-xl border border-red-900/50 uppercase">
-                    Reiniciar Novo Período
+                    Reiniciar Tudo
                 </button>
             </div>
         </div>
 
-        <!-- DASHBOARD PRINCIPAL -->
+        <!-- DASHBOARD -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-            <!-- HIDRÔMETRO -->
             <div class="lg:col-span-2 bg-slate-800/30 p-6 rounded-[32px] border border-sky-500/20 flex flex-col items-center">
-                <span class="text-[10px] font-black text-sky-400 uppercase mb-4">Visor Atual</span>
+                <span class="text-[10px] font-black text-sky-400 uppercase mb-4 tracking-widest">Leitura Atual (Visor)</span>
                 <div class="meter-display" id="mainMeter"></div>
-                <div id="lastUpdate" class="text-[9px] text-slate-500 mt-4 font-bold uppercase tracking-widest text-center">---</div>
+                <div id="lastUpdate" class="text-[9px] text-slate-500 mt-4 font-bold uppercase tracking-widest text-center italic">---</div>
             </div>
 
-            <!-- MÉDIA E PROJEÇÃO -->
             <div class="bg-slate-800 p-6 rounded-[32px] border border-slate-700 flex flex-col justify-center text-center">
                 <span class="text-[10px] text-emerald-400 font-bold uppercase mb-1">Média Diária</span>
                 <div class="text-4xl font-black text-white" id="statMedia">0</div>
                 <div class="text-[10px] text-slate-500 font-bold uppercase mt-1">Litros / Dia</div>
             </div>
 
-            <div class="bg-slate-800 p-6 rounded-[32px] border border-emerald-500/30 flex flex-col justify-center text-center">
-                <span class="text-[10px] text-emerald-400 font-bold uppercase mb-1">Projeção Próxima Fatura</span>
+            <div class="bg-slate-800 p-6 rounded-[32px] border border-emerald-500/20 flex flex-col justify-center text-center">
+                <span class="text-[10px] text-emerald-400 font-bold uppercase mb-1">Fatura Projetada</span>
                 <div class="text-3xl font-black text-white">R$ <span id="valFatura">0,00</span></div>
-                <div class="text-[9px] text-slate-500 font-bold uppercase mt-1">Taxa Fixa + Consumo</div>
+                <div id="projLabel" class="text-[9px] text-slate-500 font-bold uppercase mt-1">Base + Consumo Estimado</div>
             </div>
         </div>
 
-        <!-- PAINEL DE ÁGUA -->
+        <!-- STATUS DE CICLOS (BOIA) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 text-center">
-                <h3 class="text-[10px] text-slate-400 uppercase font-bold mb-2">Acumulado do Mês</h3>
-                <div class="text-4xl font-black text-white" id="statLitros">0</div>
-                <div class="text-[10px] text-sky-500 font-bold uppercase mt-1">Litros Totais</div>
+            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 text-center flex flex-col justify-center">
+                <h3 class="text-[10px] text-slate-400 uppercase font-bold mb-2">Total de Litros Gastos</h3>
+                <div class="text-5xl font-black text-white" id="statLitros">0</div>
+                <div class="text-[10px] text-sky-500 font-bold uppercase mt-2">Volume Acumulado</div>
             </div>
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 text-center flex flex-col items-center">
-                <h3 class="text-[10px] text-slate-400 uppercase font-bold mb-2">Ciclos de 100L</h3>
-                <div class="text-5xl font-black text-amber-400" id="statCiclos">0</div>
-                <div class="text-[10px] text-amber-600 font-bold uppercase mt-1">Boias Completas</div>
+            
+            <div class="bg-slate-900 p-6 rounded-3xl border-2 border-amber-500/50 text-center flex flex-col items-center justify-center shadow-lg shadow-amber-900/20">
+                <h3 class="text-[10px] text-amber-500 uppercase font-black mb-2 tracking-tighter">Ciclos de 100L (Boia)</h3>
+                <div class="text-6xl font-black text-white" id="statCiclos">0</div>
+                <div class="text-[10px] text-amber-600 font-bold uppercase mt-2">Voltas Completas</div>
             </div>
+
             <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 flex items-center justify-around">
                 <div class="tank-container">
-                    <div id="waterLevel" class="water-fill" style="height: 0%"></div>
+                    <div id="waterLevel" class="water-fill" style="height: 0%">
+                        <div class="water-wave"></div>
+                    </div>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-black text-white" id="statM3">0</div>
-                    <div class="text-[9px] text-slate-500 uppercase font-bold">m³ Consumidos</div>
+                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Ciclo Atual</div>
+                    <div class="text-3xl font-black text-sky-400"><span id="percCiclo">0</span>%</div>
+                    <div class="text-[9px] text-slate-600 uppercase font-bold mt-2">Próximo m³: <span id="statM3">0</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- ENTRADA -->
+        <!-- ENTRADA E TABELA -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-700 h-fit">
-                <h2 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest">Nova Medição</h2>
-                <input type="number" id="readingInput" placeholder="Ex: 29862" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xl outline-none mb-4">
-                <button onclick="addReading()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-4 rounded-xl font-black text-xs uppercase transition-all">Registar Agora</button>
+                <h2 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest text-center">Nova Medição</h2>
+                <input type="number" id="readingInput" placeholder="Ex: 29916" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-2xl text-center outline-none mb-4 focus:border-sky-500">
+                <button onclick="addReading()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-4 rounded-xl font-black text-xs uppercase transition-all shadow-lg shadow-sky-900/20">Registar Leitura</button>
             </div>
 
             <div class="lg:col-span-2 bg-slate-800/20 rounded-3xl border border-slate-700 overflow-hidden">
@@ -152,8 +170,9 @@
                         <tr>
                             <th class="p-4">Data/Hora</th>
                             <th class="p-4">Leitura</th>
-                            <th class="p-4">Consumo</th>
-                            <th class="p-4 text-center">Remover</th>
+                            <th class="p-4">Litros</th>
+                            <th class="p-4 font-bold text-sky-400">m³ Real</th>
+                            <th class="p-4 text-center">Opções</th>
                         </tr>
                     </thead>
                     <tbody id="historyTable"></tbody>
@@ -163,13 +182,12 @@
     </div>
 
     <script>
-        // Dados da CORSAN baseados na sua fatura
         const TAXA_BASICA = 39.32;
-        const CUSTO_POR_M3 = 8.28; // Média da fatura de ontem (124,20 / 15m3)
+        const CUSTO_POR_M3 = 8.28; 
         
         const DB_KEY = 'aqua_audit_v2_fatura';
         let state = {
-            baseValue: 29700,
+            baseValue: 29791,
             baseDate: '2026-03-03',
             history: []
         };
@@ -181,7 +199,13 @@
                 document.getElementById('baseInput').value = state.baseValue;
                 document.getElementById('baseDate').value = state.baseDate;
             } else {
-                state.history = [{ id: Date.now(), val: 29862, time: new Date().toLocaleString('pt-BR'), dateObj: new Date().toISOString() }];
+                // HISTÓRICO REAL FORNECIDO
+                state.history = [
+                    { id: 1, val: 29862, time: '04/03 - Quarta', dateObj: '2026-03-04T12:00:00Z' },
+                    { id: 2, val: 29876, time: '05/03 - Quinta Manhã', dateObj: '2026-03-05T09:00:00Z' },
+                    { id: 3, val: 29901, time: '05/03 - Quinta Tarde', dateObj: '2026-03-05T15:00:00Z' },
+                    { id: 4, val: 29916, time: '05/03 - Quinta Noite', dateObj: '2026-03-05T20:00:00Z' }
+                ];
                 save();
             }
             render();
@@ -195,7 +219,7 @@
         }
 
         function clearHistory() {
-            if(confirm("Deseja iniciar um novo ciclo de fatura? Isso zerará as medições atuais.")) {
+            if(confirm("Deseja apagar as leituras e começar um novo período?")) {
                 state.history = [];
                 save();
             }
@@ -223,10 +247,10 @@
         }
 
         function render() {
-            const sorted = [...state.history].sort((a,b) => a.id - b.id);
+            const sorted = [...state.history].sort((a,b) => new Date(a.dateObj) - new Date(b.dateObj));
             const lastEntry = sorted[sorted.length - 1] || { val: state.baseValue, time: 'Sem dados', dateObj: new Date().toISOString() };
 
-            // Render Hidrômetro
+            // HIDRÓMETRO VISUAL
             const meter = document.getElementById('mainMeter');
             const sVal = lastEntry.val.toString().padStart(6, '0');
             meter.innerHTML = '';
@@ -237,46 +261,48 @@
                 d.innerText = sVal[i];
                 meter.appendChild(d);
             }
-            document.getElementById('lastUpdate').innerText = `Atualizado: ${lastEntry.time}`;
+            document.getElementById('lastUpdate').innerText = lastEntry.time;
 
-            // Cálculos
+            // CÁLCULOS DE LITROS E CICLOS
             const totalLitros = Math.max(0, lastEntry.val - state.baseValue);
             const numCiclos = Math.floor(totalLitros / 100);
-            const litrosTanque = totalLitros % 100;
-            const m3Consumidos = totalLitros / 1000;
-
-            // Média Diária
+            const litrosRestantesNoCiclo = totalLitros % 100;
+            
+            // MÉDIA E PROJEÇÃO
             const dataBase = new Date(state.baseDate + 'T00:00:00');
             const dataUltima = new Date(lastEntry.dateObj);
-            const diffTempo = Math.max(1000 * 60 * 60 * 24, dataUltima - dataBase); // Mínimo 1 dia para evitar divisão por zero
+            const diffTempo = Math.max(1000 * 60 * 60, dataUltima - dataBase); 
             const diasDecorridos = diffTempo / (1000 * 60 * 60 * 24);
             const mediaDiaria = totalLitros / diasDecorridos;
 
-            // Projeção Financeira
-            // CORSAN cobra m3 cheio (teto)
-            const m3Faturaveis = Math.ceil(m3Consumidos);
+            const litrosMensais = mediaDiaria * 30;
+            const m3Faturaveis = Math.ceil(litrosMensais / 1000);
             const valorProjetado = TAXA_BASICA + (m3Faturaveis * CUSTO_POR_M3);
 
-            // Atualiza UI
-            document.getElementById('statLitros').innerText = totalLitros.toLocaleString('pt-BR');
+            // ATUALIZAÇÃO DA INTERFACE
+            document.getElementById('statLitros').innerText = totalLitros;
             document.getElementById('statCiclos').innerText = numCiclos;
-            document.getElementById('statM3').innerText = m3Consumidos.toFixed(3);
+            document.getElementById('percCiclo').innerText = litrosRestantesNoCiclo;
+            document.getElementById('statM3').innerText = (totalLitros / 1000).toFixed(3);
             document.getElementById('statMedia').innerText = Math.round(mediaDiaria);
             document.getElementById('valFatura').innerText = valorProjetado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('waterLevel').style.height = `${litrosTanque}%`;
+            document.getElementById('waterLevel').style.height = `${litrosRestantesNoCiclo}%`;
 
-            // Tabela
+            // TABELA
             const table = document.getElementById('historyTable');
             table.innerHTML = '';
             [...sorted].reverse().forEach(entry => {
+                const litrosAcum = entry.val - state.baseValue;
+                const m3Real = (litrosAcum / 1000).toFixed(3);
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-700/50 hover:bg-white/5";
                 tr.innerHTML = `
                     <td class="p-4 text-slate-400 font-medium">${entry.time}</td>
-                    <td class="p-4 font-mono font-bold text-sky-400">${entry.val}</td>
-                    <td class="p-4 text-emerald-400 font-bold">${entry.val - state.baseValue} L</td>
+                    <td class="p-4 font-mono font-bold text-white text-lg">${entry.val}</td>
+                    <td class="p-4 text-emerald-400 font-bold">${litrosAcum} L</td>
+                    <td class="p-4 text-sky-400 font-black">${m3Real} m³</td>
                     <td class="p-4 text-center">
-                        <button onclick="removeEntry(${entry.id})" class="text-red-500/50 hover:text-red-500 font-bold">×</button>
+                        <button onclick="removeEntry(${entry.id})" class="text-red-500/30 hover:text-red-500 font-bold text-xl">×</button>
                     </td>
                 `;
                 table.appendChild(tr);
