@@ -50,11 +50,13 @@
         }
         .history-row:nth-child(even) { background: rgba(255,255,255,0.02); }
         
-        .alert-high { color: #f87171; animation: pulse 2s infinite; }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+        .btn-delete {
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover {
+            color: #f87171;
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -69,21 +71,25 @@
                 <div class="text-[9px] text-slate-400">2 Adultos + 2 Crianças</div>
             </div>
             <div class="card text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Ideal (OMS)</span>
-                <div class="text-xl font-black text-emerald-400">~440 L/dia</div>
+                <span class="text-[10px] uppercase font-bold text-slate-500">Valor Água (Fatura)</span>
+                <div class="text-xl font-black text-sky-400">R$ 124,20</div>
             </div>
             <div class="card text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Intervalo Atual</span>
-                <div class="text-xl font-black text-white">5,0 Dias</div>
+                <span class="text-[10px] uppercase font-bold text-slate-500">Taxa Serviço</span>
+                <div class="text-xl font-black text-white">R$ 39,32</div>
             </div>
             <div class="card text-center border-b-2 border-b-red-500">
                 <span class="text-[10px] uppercase font-bold text-slate-500">Status</span>
-                <div class="text-xl font-black text-red-400 uppercase italic">Elevado</div>
+                <div class="text-xl font-black text-red-400 uppercase italic">Atenção</div>
             </div>
         </div>
 
         <!-- VISOR SAGA -->
-        <div class="card mb-8 flex flex-col items-center py-10 bg-slate-800/40 border-2 border-slate-700">
+        <div class="card mb-8 flex flex-col items-center py-10 bg-slate-800/40 border-2 border-slate-700 relative">
+            <button onclick="zerarLeituras()" class="absolute top-4 right-4 text-[9px] font-bold text-slate-500 border border-slate-700 px-3 py-1 rounded-full hover:bg-red-500/10 hover:text-red-400 transition-all uppercase flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Zerar Hidrómetro
+            </button>
             <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Leitura Atual no Hidrómetro</h2>
             <div class="meter-display" id="sagaMeter"></div>
             <div class="mt-6 text-slate-400 font-bold text-sm">Visor: <span id="txtLeitura" class="text-white">0</span> m³</div>
@@ -92,34 +98,34 @@
         <!-- DASHBOARD DE AUDITORIA -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="card bg-blue-900/10">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Média Diária Registada</h3>
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Média Diária Atual</h3>
                 <div class="text-4xl font-black text-red-400" id="valMedia">0</div>
                 <div class="text-[10px] text-slate-500 mt-1 uppercase font-bold" id="statusPessoa">0 L por pessoa</div>
             </div>
             <div class="card bg-amber-900/10">
                 <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Total no Período</h3>
                 <div class="text-4xl font-black text-amber-400" id="valLitros">0</div>
-                <div class="text-[10px] text-slate-500 mt-1 italic">Diferença real em Litros</div>
+                <div class="text-[10px] text-slate-500 mt-1 italic">Diferença em Litros (Ciclo)</div>
             </div>
             <div class="card bg-emerald-900/10">
                 <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Impacto na Fatura</h3>
                 <div class="text-4xl font-black text-emerald-400">R$ <span id="valFatura">0,00</span></div>
-                <div class="text-[10px] text-slate-500 mt-1">Taxa + m³ atuais</div>
+                <div class="text-[10px] text-slate-500 mt-1">Taxa + consumo real (R$ 8,28/m³)</div>
             </div>
         </div>
 
-        <!-- ANÁLISE DE CONSUMO -->
-        <div class="card mb-8 bg-slate-900/50 border-red-500/20">
+        <!-- MONITORAMENTO ATIVO -->
+        <div class="card mb-8 bg-slate-900/50 border-sky-500/20">
             <h3 class="text-xs font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-                Análise de Desvio de Consumo
+                <span class="w-2 h-2 bg-sky-500 rounded-full animate-pulse"></span>
+                Monitoramento de Consumo e Gastos
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div class="p-4 bg-slate-800/50 rounded-xl">
-                    <p class="text-slate-400">Sua média de <b id="txtMediaObs" class="text-white">---</b> está <b class="text-red-400">80% acima</b> do recomendado para uma família de 4 pessoas.</p>
+                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <p class="text-slate-400">Dados contratuais: Fatura base de <b class="text-white">R$ 163,52</b> (água + taxa). Seu custo variável atual é <b class="text-white">R$ 8,28 por m³</b>.</p>
                 </div>
-                <div class="p-4 bg-slate-800/50 rounded-xl">
-                    <p class="text-slate-400">Pico identificado: <b class="text-white">Sexta para Sábado</b> (+725 litros em 24h).</p>
+                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <p class="text-slate-400">Status Preventivo: <b class="text-white">Frequência de medição alta</b> permite detectar picos de consumo rapidamente.</p>
                 </div>
             </div>
         </div>
@@ -127,7 +133,7 @@
         <!-- ENTRADA E TABELA -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="card h-fit">
-                <h3 class="text-xs font-black uppercase text-sky-400 mb-4">Novo Lançamento</h3>
+                <h3 class="text-xs font-black uppercase text-sky-400 mb-4 text-center">Novo Lançamento</h3>
                 <input type="number" id="inputManual" placeholder="Ex: 30115" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-3xl font-mono text-center mb-4 focus:border-sky-500 outline-none text-white">
                 <button onclick="registrar()" class="w-full bg-sky-600 py-4 rounded-xl font-black uppercase text-xs hover:bg-sky-500 transition-all shadow-lg">Registar Leitura</button>
             </div>
@@ -144,11 +150,27 @@
                                 <th class="p-4 text-center">Visor</th>
                                 <th class="p-4 text-center">Consumo (L)</th>
                                 <th class="p-4 text-right">Acumulado</th>
+                                <th class="p-4 text-center">Acções</th>
                             </tr>
                         </thead>
                         <tbody id="historico" class="text-sm"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO PARA ZERAR -->
+    <div id="modalReset" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 p-8 rounded-3xl max-w-sm w-full border border-slate-700 text-center shadow-2xl">
+            <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2">Zerar Auditoria?</h3>
+            <p class="text-slate-400 text-sm mb-6">Esta acção irá apagar todo o histórico de leituras. Esta operação não pode ser desfeita.</p>
+            <div class="flex gap-3">
+                <button onclick="fecharModal()" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
+                <button onclick="confirmarZerar()" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-500">Confirmar</button>
             </div>
         </div>
     </div>
@@ -160,15 +182,15 @@
         const PESSOAS = 4;
         
         let leituras = [
-            { val: 29791, label: '03/03 Terça' },
-            { val: 29862, label: '04/03 Quarta' },
-            { val: 29876, label: '05/03 Quinta' },
-            { val: 29901, label: '05/03 Quinta T' },
-            { val: 29916, label: '05/03 Quinta N' },
-            { val: 29990, label: '06/03 Sexta' },
-            { val: 30055, label: '07/03 Sábado' },
-            { val: 30084, label: '07/03 Sábado N' },
-            { val: 30115, label: '08/03 Domingo' }
+            { id: 1, val: 29791, label: '03/03 Terça' },
+            { id: 2, val: 29862, label: '04/03 Quarta' },
+            { id: 3, val: 29876, label: '05/03 Quinta' },
+            { id: 4, val: 29901, label: '05/03 Quinta T' },
+            { id: 5, val: 29916, label: '05/03 Quinta N' },
+            { id: 6, val: 29990, label: '06/03 Sexta' },
+            { id: 7, val: 30055, label: '07/03 Sábado' },
+            { id: 8, val: 30084, label: '07/03 Sábado N' },
+            { id: 9, val: 30115, label: '08/03 Domingo' }
         ];
 
         function registrar() {
@@ -177,8 +199,27 @@
             if(!val) return;
             const agora = new Date();
             const label = agora.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + agora.toLocaleDateString('pt-BR', {weekday:'short'});
-            leituras.push({ val: val, label: label });
+            leituras.push({ id: Date.now(), val: val, label: label });
             input.value = '';
+            atualizar();
+        }
+
+        function removerLeitura(id) {
+            leituras = leituras.filter(l => l.id !== id);
+            atualizar();
+        }
+
+        function zerarLeituras() {
+            document.getElementById('modalReset').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalReset').style.display = 'none';
+        }
+
+        function confirmarZerar() {
+            leituras = [];
+            fecharModal();
             atualizar();
         }
 
@@ -189,12 +230,25 @@
         }
 
         function atualizar() {
+            const visor = document.getElementById('sagaMeter');
+            const tabela = document.getElementById('historico');
+
+            if (leituras.length === 0) {
+                visor.innerHTML = '<div class="text-slate-600 font-mono text-xl p-4 italic">Sem leituras registadas</div>';
+                document.getElementById('txtLeitura').innerText = '0,00';
+                document.getElementById('valLitros').innerText = '0 L';
+                document.getElementById('valMedia').innerText = '0 L';
+                document.getElementById('statusPessoa').innerText = '0 L por pessoa / dia';
+                document.getElementById('valFatura').innerText = '0,00';
+                tabela.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 italic">Inicie uma nova medição no painel ao lado.</td></tr>';
+                return;
+            }
+
             const ultima = leituras[leituras.length - 1];
             const primeira = leituras[0];
             
             // 1. Visor
             const s = ultima.val.toString().padStart(6, '0');
-            const visor = document.getElementById('sagaMeter');
             visor.innerHTML = '';
             for(let i=0; i<6; i++) {
                 const d = document.createElement('div');
@@ -204,37 +258,41 @@
             }
             document.getElementById('txtLeitura').innerText = (ultima.val / 100).toFixed(2).replace('.', ',');
 
-            // 2. Dashboard e Cálculos
+            // 2. Cálculos
             const litrosFim = getLitros(ultima.val);
             const litrosBaseFatura = BASE_CORSAN * 1000;
-            const consumoTotal = litrosFim - (getLitros(primeira.val));
-            const dias = 5; 
+            const consumoTotalPeríodo = leituras.length > 1 ? litrosFim - getLitros(primeira.val) : 0;
+            const dias = 5; // Mantido fixo para o exemplo do ciclo
             
-            const mediaDiaria = Math.round(consumoTotal / dias);
+            const mediaDiaria = Math.round(consumoTotalPeríodo / dias);
             const mediaPorPessoa = Math.round(mediaDiaria / PESSOAS);
 
             document.getElementById('valLitros').innerText = (litrosFim - litrosBaseFatura).toLocaleString() + ' L';
             document.getElementById('valMedia').innerText = mediaDiaria + ' L';
             document.getElementById('statusPessoa').innerText = mediaPorPessoa + ' L por pessoa / dia';
-            document.getElementById('txtMediaObs').innerText = mediaDiaria + ' Litros/dia';
 
             const m3Faturaveis = Math.floor(ultima.val/100) - BASE_CORSAN;
-            document.getElementById('valFatura').innerText = (TAXA_FIXA + (m3Faturaveis * VALOR_M3)).toFixed(2).replace('.', ',');
+            const valorCalculado = TAXA_FIXA + (m3Faturaveis * VALOR_M3);
+            document.getElementById('valFatura').innerText = valorCalculado.toFixed(2).replace('.', ',');
 
             // 3. Tabela
-            const tabela = document.getElementById('historico');
             tabela.innerHTML = '';
             leituras.forEach((l, index) => {
-                const acumulado = getLitros(l.val) - litrosBaseFatura;
+                const acumuladoCiclo = getLitros(l.val) - litrosBaseFatura;
                 let parcial = index === 0 ? 0 : getLitros(l.val) - getLitros(leituras[index-1].val);
 
                 const tr = document.createElement('tr');
-                tr.className = 'history-row border-b border-slate-800/50';
+                tr.className = 'history-row border-b border-slate-800/50 group';
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-slate-400 text-xs">${l.label}</td>
                     <td class="p-4 text-center font-mono text-white">${l.val}</td>
                     <td class="p-4 text-center ${parcial > 500 ? 'text-red-400 font-black' : 'text-sky-400'}">${index === 0 ? '-' : '+' + parcial} L</td>
-                    <td class="p-4 text-right font-black text-slate-300">${acumulado.toLocaleString()} L</td>
+                    <td class="p-4 text-right font-black text-slate-300">${acumuladoCiclo.toLocaleString()} L</td>
+                    <td class="p-4 text-center">
+                        <button onclick="removerLeitura(${l.id})" class="btn-delete" title="Remover Registo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                    </td>
                 `;
                 tabela.appendChild(tr);
             });
