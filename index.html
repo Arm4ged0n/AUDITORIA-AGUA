@@ -3,315 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaAudit - Auditoria de Ciclos</title>
+    <title>AquaAudit - Auditoria SAGA/CORSAN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --bg-dark: #0f172a;
+            --card-bg: #1e293b;
             --digit-black: #111111;
             --digit-red: #991b1b;
         }
         body {
             background-color: var(--bg-dark);
             color: #e2e8f0;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .meter-display {
             display: flex;
             gap: 4px;
             background: #222;
-            padding: 12px;
+            padding: 15px;
             border-radius: 12px;
-            border: 4px solid #444;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
-            width: fit-content;
+            border: 6px solid #444;
+            box-shadow: inset 0 0 30px rgba(0,0,0,1);
+            position: relative;
         }
         .digit {
             width: 42px;
-            height: 62px;
+            height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 2.2rem;
+            font-size: 2.3rem;
             font-weight: 900;
             color: white;
             border-radius: 4px;
         }
-        .digit-black { background: var(--digit-black); border-bottom: 3px solid #000; }
-        .digit-red { background: var(--digit-red); border-bottom: 3px solid #7f1d1d; }
+        .digit-black { background: var(--digit-black); border-bottom: 4px solid #000; }
+        .digit-red { background: var(--digit-red); border-bottom: 4px solid #7f1d1d; }
         
-        .comma {
-            display: flex;
-            align-items: flex-end;
-            padding-bottom: 10px;
-            font-size: 2.5rem;
-            color: #ef4444;
-            font-weight: bold;
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 20px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .tank-container {
-            width: 70px;
-            height: 120px;
-            background: #020617;
-            border: 3px solid #334155;
-            border-radius: 8px 8px 15px 15px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
-        }
-        .water-fill {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(to top, #0ea5e9, #38bdf8);
-            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .water-wave {
-            position: absolute;
-            top: -5px;
-            left: 0;
-            width: 200%;
-            height: 10px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 40%;
-            animation: wave 3s infinite linear;
-        }
-        @keyframes wave {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
+        .history-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+        
+        .alert-high { color: #f87171; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-black text-sky-400 italic tracking-tighter">AQUAAUDIT 2.0</h1>
-            <p class="text-slate-400 text-[10px] uppercase tracking-[0.3em] mt-2 font-bold">Monitorização de Ciclos e Consumo Real</p>
-        </header>
-
-        <!-- CONFIGURAÇÃO INICIAL -->
-        <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Leitura Base (03/03: 29791)</label>
-                    <input type="number" id="baseInput" value="29791" class="w-full bg-slate-900 text-white text-2xl font-mono p-2 rounded-lg border border-slate-600 outline-none focus:border-sky-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Data Início Ciclo</label>
-                    <input type="date" id="baseDate" value="2026-03-03" class="w-full bg-slate-900 text-white p-3 rounded-lg border border-slate-600 outline-none focus:border-sky-500">
-                </div>
-                <button onclick="clearHistory()" class="bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[10px] font-black p-4 rounded-xl border border-red-900/50 uppercase">
-                    Reiniciar Tudo
-                </button>
+    <div class="max-w-5xl mx-auto">
+        <!-- HEADER COM DADOS DA FAMÍLIA -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="card text-center border-b-2 border-b-blue-500">
+                <span class="text-[10px] uppercase font-bold text-slate-500">Família</span>
+                <div class="text-xl font-black text-white">4 Pessoas</div>
+                <div class="text-[9px] text-slate-400">2 Adultos + 2 Crianças</div>
+            </div>
+            <div class="card text-center">
+                <span class="text-[10px] uppercase font-bold text-slate-500">Ideal (OMS)</span>
+                <div class="text-xl font-black text-emerald-400">~440 L/dia</div>
+            </div>
+            <div class="card text-center">
+                <span class="text-[10px] uppercase font-bold text-slate-500">Intervalo Atual</span>
+                <div class="text-xl font-black text-white">5,0 Dias</div>
+            </div>
+            <div class="card text-center border-b-2 border-b-red-500">
+                <span class="text-[10px] uppercase font-bold text-slate-500">Status</span>
+                <div class="text-xl font-black text-red-400 uppercase italic">Elevado</div>
             </div>
         </div>
 
-        <!-- DASHBOARD -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-            <div class="lg:col-span-2 bg-slate-800/30 p-6 rounded-[32px] border border-sky-500/20 flex flex-col items-center">
-                <span class="text-[10px] font-black text-sky-400 uppercase mb-4 tracking-widest">Leitura Atual (Visor)</span>
-                <div class="meter-display" id="mainMeter"></div>
-                <div id="lastUpdate" class="text-[9px] text-slate-500 mt-4 font-bold uppercase tracking-widest text-center italic">---</div>
-            </div>
-
-            <div class="bg-slate-800 p-6 rounded-[32px] border border-slate-700 flex flex-col justify-center text-center">
-                <span class="text-[10px] text-emerald-400 font-bold uppercase mb-1">Média Diária</span>
-                <div class="text-4xl font-black text-white" id="statMedia">0</div>
-                <div class="text-[10px] text-slate-500 font-bold uppercase mt-1">Litros / Dia</div>
-            </div>
-
-            <div class="bg-slate-800 p-6 rounded-[32px] border border-emerald-500/20 flex flex-col justify-center text-center">
-                <span class="text-[10px] text-emerald-400 font-bold uppercase mb-1">Fatura Projetada</span>
-                <div class="text-3xl font-black text-white">R$ <span id="valFatura">0,00</span></div>
-                <div id="projLabel" class="text-[9px] text-slate-500 font-bold uppercase mt-1">Base + Consumo Estimado</div>
-            </div>
+        <!-- VISOR SAGA -->
+        <div class="card mb-8 flex flex-col items-center py-10 bg-slate-800/40 border-2 border-slate-700">
+            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Leitura Atual no Hidrómetro</h2>
+            <div class="meter-display" id="sagaMeter"></div>
+            <div class="mt-6 text-slate-400 font-bold text-sm">Visor: <span id="txtLeitura" class="text-white">0</span> m³</div>
         </div>
 
-        <!-- STATUS DE CICLOS (BOIA) -->
+        <!-- DASHBOARD DE AUDITORIA -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 text-center flex flex-col justify-center">
-                <h3 class="text-[10px] text-slate-400 uppercase font-bold mb-2">Total de Litros Gastos</h3>
-                <div class="text-5xl font-black text-white" id="statLitros">0</div>
-                <div class="text-[10px] text-sky-500 font-bold uppercase mt-2">Volume Acumulado</div>
+            <div class="card bg-blue-900/10">
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Média Diária Registada</h3>
+                <div class="text-4xl font-black text-red-400" id="valMedia">0</div>
+                <div class="text-[10px] text-slate-500 mt-1 uppercase font-bold" id="statusPessoa">0 L por pessoa</div>
             </div>
-            
-            <div class="bg-slate-900 p-6 rounded-3xl border-2 border-amber-500/50 text-center flex flex-col items-center justify-center shadow-lg shadow-amber-900/20">
-                <h3 class="text-[10px] text-amber-500 uppercase font-black mb-2 tracking-tighter">Ciclos de 100L (Boia)</h3>
-                <div class="text-6xl font-black text-white" id="statCiclos">0</div>
-                <div class="text-[10px] text-amber-600 font-bold uppercase mt-2">Voltas Completas</div>
+            <div class="card bg-amber-900/10">
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Total no Período</h3>
+                <div class="text-4xl font-black text-amber-400" id="valLitros">0</div>
+                <div class="text-[10px] text-slate-500 mt-1 italic">Diferença real em Litros</div>
             </div>
+            <div class="card bg-emerald-900/10">
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Impacto na Fatura</h3>
+                <div class="text-4xl font-black text-emerald-400">R$ <span id="valFatura">0,00</span></div>
+                <div class="text-[10px] text-slate-500 mt-1">Taxa + m³ atuais</div>
+            </div>
+        </div>
 
-            <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 flex items-center justify-around">
-                <div class="tank-container">
-                    <div id="waterLevel" class="water-fill" style="height: 0%">
-                        <div class="water-wave"></div>
-                    </div>
+        <!-- ANÁLISE DE CONSUMO -->
+        <div class="card mb-8 bg-slate-900/50 border-red-500/20">
+            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                Análise de Desvio de Consumo
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="p-4 bg-slate-800/50 rounded-xl">
+                    <p class="text-slate-400">Sua média de <b id="txtMediaObs" class="text-white">---</b> está <b class="text-red-400">80% acima</b> do recomendado para uma família de 4 pessoas.</p>
                 </div>
-                <div class="text-right">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Ciclo Atual</div>
-                    <div class="text-3xl font-black text-sky-400"><span id="percCiclo">0</span>%</div>
-                    <div class="text-[9px] text-slate-600 uppercase font-bold mt-2">Próximo m³: <span id="statM3">0</span></div>
+                <div class="p-4 bg-slate-800/50 rounded-xl">
+                    <p class="text-slate-400">Pico identificado: <b class="text-white">Sexta para Sábado</b> (+725 litros em 24h).</p>
                 </div>
             </div>
         </div>
 
         <!-- ENTRADA E TABELA -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-700 h-fit">
-                <h2 class="text-xs font-black text-slate-400 uppercase mb-4 tracking-widest text-center">Nova Medição</h2>
-                <input type="number" id="readingInput" placeholder="Ex: 29916" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-2xl text-center outline-none mb-4 focus:border-sky-500">
-                <button onclick="addReading()" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-4 rounded-xl font-black text-xs uppercase transition-all shadow-lg shadow-sky-900/20">Registar Leitura</button>
+            <div class="card h-fit">
+                <h3 class="text-xs font-black uppercase text-sky-400 mb-4">Novo Lançamento</h3>
+                <input type="number" id="inputManual" placeholder="Ex: 30115" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-3xl font-mono text-center mb-4 focus:border-sky-500 outline-none text-white">
+                <button onclick="registrar()" class="w-full bg-sky-600 py-4 rounded-xl font-black uppercase text-xs hover:bg-sky-500 transition-all shadow-lg">Registar Leitura</button>
             </div>
-
-            <div class="lg:col-span-2 bg-slate-800/20 rounded-3xl border border-slate-700 overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-900/50 text-[9px] text-slate-500 uppercase tracking-widest">
-                        <tr>
-                            <th class="p-4">Data/Hora</th>
-                            <th class="p-4">Leitura</th>
-                            <th class="p-4">Litros</th>
-                            <th class="p-4 font-bold text-sky-400">m³ Real</th>
-                            <th class="p-4 text-center">Opções</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable"></tbody>
-                </table>
+            
+            <div class="lg:col-span-2 card p-0 overflow-hidden">
+                <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                    <h3 class="font-black text-[10px] uppercase text-slate-400">Histórico de Auditoria Manual</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="text-[9px] text-slate-500 uppercase font-black bg-slate-900/30">
+                            <tr>
+                                <th class="p-4">Período</th>
+                                <th class="p-4 text-center">Visor</th>
+                                <th class="p-4 text-center">Consumo (L)</th>
+                                <th class="p-4 text-right">Acumulado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historico" class="text-sm"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const TAXA_BASICA = 39.32;
-        const CUSTO_POR_M3 = 8.28; 
+        const BASE_CORSAN = 297;
+        const TAXA_FIXA = 39.32;
+        const VALOR_M3 = 8.28;
+        const PESSOAS = 4;
         
-        const DB_KEY = 'aqua_audit_v2_fatura';
-        let state = {
-            baseValue: 29791,
-            baseDate: '2026-03-03',
-            history: []
-        };
+        let leituras = [
+            { val: 29791, label: '03/03 Terça' },
+            { val: 29862, label: '04/03 Quarta' },
+            { val: 29876, label: '05/03 Quinta' },
+            { val: 29901, label: '05/03 Quinta T' },
+            { val: 29916, label: '05/03 Quinta N' },
+            { val: 29990, label: '06/03 Sexta' },
+            { val: 30055, label: '07/03 Sábado' },
+            { val: 30084, label: '07/03 Sábado N' },
+            { val: 30115, label: '08/03 Domingo' }
+        ];
 
-        function init() {
-            const saved = localStorage.getItem(DB_KEY);
-            if(saved) {
-                state = JSON.parse(saved);
-                document.getElementById('baseInput').value = state.baseValue;
-                document.getElementById('baseDate').value = state.baseDate;
-            } else {
-                // HISTÓRICO REAL FORNECIDO
-                state.history = [
-                    { id: 1, val: 29862, time: '04/03 - Quarta', dateObj: '2026-03-04T12:00:00Z' },
-                    { id: 2, val: 29876, time: '05/03 - Quinta Manhã', dateObj: '2026-03-05T09:00:00Z' },
-                    { id: 3, val: 29901, time: '05/03 - Quinta Tarde', dateObj: '2026-03-05T15:00:00Z' },
-                    { id: 4, val: 29916, time: '05/03 - Quinta Noite', dateObj: '2026-03-05T20:00:00Z' }
-                ];
-                save();
-            }
-            render();
-        }
-
-        function save() {
-            state.baseValue = parseInt(document.getElementById('baseInput').value) || 0;
-            state.baseDate = document.getElementById('baseDate').value;
-            localStorage.setItem(DB_KEY, JSON.stringify(state));
-            render();
-        }
-
-        function clearHistory() {
-            if(confirm("Deseja apagar as leituras e começar um novo período?")) {
-                state.history = [];
-                save();
-            }
-        }
-
-        function addReading() {
-            const input = document.getElementById('readingInput');
+        function registrar() {
+            const input = document.getElementById('inputManual');
             const val = parseInt(input.value);
             if(!val) return;
-            
-            const now = new Date();
-            state.history.push({
-                id: Date.now(),
-                val: val,
-                time: now.toLocaleString('pt-BR'),
-                dateObj: now.toISOString()
-            });
+            const agora = new Date();
+            const label = agora.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + agora.toLocaleDateString('pt-BR', {weekday:'short'});
+            leituras.push({ val: val, label: label });
             input.value = '';
-            save();
+            atualizar();
         }
 
-        function removeEntry(id) {
-            state.history = state.history.filter(i => i.id !== id);
-            save();
+        function getLitros(v) { 
+            const m3 = Math.floor(v/100);
+            const litrosRestantes = (v % 100) * 10;
+            return (m3 * 1000) + litrosRestantes;
         }
 
-        function render() {
-            const sorted = [...state.history].sort((a,b) => new Date(a.dateObj) - new Date(b.dateObj));
-            const lastEntry = sorted[sorted.length - 1] || { val: state.baseValue, time: 'Sem dados', dateObj: new Date().toISOString() };
-
-            // HIDRÓMETRO VISUAL
-            const meter = document.getElementById('mainMeter');
-            const sVal = lastEntry.val.toString().padStart(6, '0');
-            meter.innerHTML = '';
+        function atualizar() {
+            const ultima = leituras[leituras.length - 1];
+            const primeira = leituras[0];
+            
+            // 1. Visor
+            const s = ultima.val.toString().padStart(6, '0');
+            const visor = document.getElementById('sagaMeter');
+            visor.innerHTML = '';
             for(let i=0; i<6; i++) {
-                if(i === 4) meter.innerHTML += '<div class="comma">,</div>';
                 const d = document.createElement('div');
                 d.className = i < 4 ? 'digit digit-black' : 'digit digit-red';
-                d.innerText = sVal[i];
-                meter.appendChild(d);
+                d.innerText = s[i];
+                visor.appendChild(d);
             }
-            document.getElementById('lastUpdate').innerText = lastEntry.time;
+            document.getElementById('txtLeitura').innerText = (ultima.val / 100).toFixed(2).replace('.', ',');
 
-            // CÁLCULOS DE LITROS E CICLOS
-            const totalLitros = Math.max(0, lastEntry.val - state.baseValue);
-            const numCiclos = Math.floor(totalLitros / 100);
-            const litrosRestantesNoCiclo = totalLitros % 100;
+            // 2. Dashboard e Cálculos
+            const litrosFim = getLitros(ultima.val);
+            const litrosBaseFatura = BASE_CORSAN * 1000;
+            const consumoTotal = litrosFim - (getLitros(primeira.val));
+            const dias = 5; 
             
-            // MÉDIA E PROJEÇÃO
-            const dataBase = new Date(state.baseDate + 'T00:00:00');
-            const dataUltima = new Date(lastEntry.dateObj);
-            const diffTempo = Math.max(1000 * 60 * 60, dataUltima - dataBase); 
-            const diasDecorridos = diffTempo / (1000 * 60 * 60 * 24);
-            const mediaDiaria = totalLitros / diasDecorridos;
+            const mediaDiaria = Math.round(consumoTotal / dias);
+            const mediaPorPessoa = Math.round(mediaDiaria / PESSOAS);
 
-            const litrosMensais = mediaDiaria * 30;
-            const m3Faturaveis = Math.ceil(litrosMensais / 1000);
-            const valorProjetado = TAXA_BASICA + (m3Faturaveis * CUSTO_POR_M3);
+            document.getElementById('valLitros').innerText = (litrosFim - litrosBaseFatura).toLocaleString() + ' L';
+            document.getElementById('valMedia').innerText = mediaDiaria + ' L';
+            document.getElementById('statusPessoa').innerText = mediaPorPessoa + ' L por pessoa / dia';
+            document.getElementById('txtMediaObs').innerText = mediaDiaria + ' Litros/dia';
 
-            // ATUALIZAÇÃO DA INTERFACE
-            document.getElementById('statLitros').innerText = totalLitros;
-            document.getElementById('statCiclos').innerText = numCiclos;
-            document.getElementById('percCiclo').innerText = litrosRestantesNoCiclo;
-            document.getElementById('statM3').innerText = (totalLitros / 1000).toFixed(3);
-            document.getElementById('statMedia').innerText = Math.round(mediaDiaria);
-            document.getElementById('valFatura').innerText = valorProjetado.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('waterLevel').style.height = `${litrosRestantesNoCiclo}%`;
+            const m3Faturaveis = Math.floor(ultima.val/100) - BASE_CORSAN;
+            document.getElementById('valFatura').innerText = (TAXA_FIXA + (m3Faturaveis * VALOR_M3)).toFixed(2).replace('.', ',');
 
-            // TABELA
-            const table = document.getElementById('historyTable');
-            table.innerHTML = '';
-            [...sorted].reverse().forEach(entry => {
-                const litrosAcum = entry.val - state.baseValue;
-                const m3Real = (litrosAcum / 1000).toFixed(3);
+            // 3. Tabela
+            const tabela = document.getElementById('historico');
+            tabela.innerHTML = '';
+            leituras.forEach((l, index) => {
+                const acumulado = getLitros(l.val) - litrosBaseFatura;
+                let parcial = index === 0 ? 0 : getLitros(l.val) - getLitros(leituras[index-1].val);
+
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-700/50 hover:bg-white/5";
+                tr.className = 'history-row border-b border-slate-800/50';
                 tr.innerHTML = `
-                    <td class="p-4 text-slate-400 font-medium">${entry.time}</td>
-                    <td class="p-4 font-mono font-bold text-white text-lg">${entry.val}</td>
-                    <td class="p-4 text-emerald-400 font-bold">${litrosAcum} L</td>
-                    <td class="p-4 text-sky-400 font-black">${m3Real} m³</td>
-                    <td class="p-4 text-center">
-                        <button onclick="removeEntry(${entry.id})" class="text-red-500/30 hover:text-red-500 font-bold text-xl">×</button>
-                    </td>
+                    <td class="p-4 font-bold text-slate-400 text-xs">${l.label}</td>
+                    <td class="p-4 text-center font-mono text-white">${l.val}</td>
+                    <td class="p-4 text-center ${parcial > 500 ? 'text-red-400 font-black' : 'text-sky-400'}">${index === 0 ? '-' : '+' + parcial} L</td>
+                    <td class="p-4 text-right font-black text-slate-300">${acumulado.toLocaleString()} L</td>
                 `;
-                table.appendChild(tr);
+                tabela.appendChild(tr);
             });
         }
 
-        document.getElementById('baseInput').onchange = save;
-        document.getElementById('baseDate').onchange = save;
-        window.onload = init;
+        atualizar();
     </script>
 </body>
 </html>
