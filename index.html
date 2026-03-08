@@ -63,12 +63,19 @@
 <body class="p-4 md:p-8">
 
     <div class="max-w-5xl mx-auto">
-        <!-- HEADER COM DADOS DA FAMÍLIA -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <!-- HEADER COM DADOS DA FAMÍLIA E LEITURA BASE -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="card text-center border-b-2 border-b-blue-500">
                 <span class="text-[10px] uppercase font-bold text-slate-500">Família</span>
                 <div class="text-xl font-black text-white">4 Pessoas</div>
                 <div class="text-[9px] text-slate-400">2 Adultos + 2 Crianças</div>
+            </div>
+            <div class="card text-center relative group">
+                <span class="text-[10px] uppercase font-bold text-slate-500">Última Corsan</span>
+                <div class="text-xl font-black text-sky-400"><span id="displayBaseCorsan">297</span> m³</div>
+                <button onclick="abrirModalBase()" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                </button>
             </div>
             <div class="card text-center">
                 <span class="text-[10px] uppercase font-bold text-slate-500">Valor Água (Fatura)</span>
@@ -88,7 +95,7 @@
         <div class="card mb-8 flex flex-col items-center py-10 bg-slate-800/40 border-2 border-slate-700 relative">
             <button onclick="zerarLeituras()" class="absolute top-4 right-4 text-[9px] font-bold text-slate-500 border border-slate-700 px-3 py-1 rounded-full hover:bg-red-500/10 hover:text-red-400 transition-all uppercase flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                Zerar Hidrómetro
+                Zerar Histórico
             </button>
             <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Leitura Atual no Hidrómetro</h2>
             <div class="meter-display" id="sagaMeter"></div>
@@ -105,12 +112,12 @@
             <div class="card bg-amber-900/10">
                 <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Total no Período</h3>
                 <div class="text-4xl font-black text-amber-400" id="valLitros">0</div>
-                <div class="text-[10px] text-slate-500 mt-1 italic">Diferença em Litros (Ciclo)</div>
+                <div class="text-[10px] text-slate-500 mt-1 italic">Consumo Real (Desde a Base)</div>
             </div>
             <div class="card bg-emerald-900/10">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Impacto na Fatura</h3>
+                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Previsão de Fatura</h3>
                 <div class="text-4xl font-black text-emerald-400">R$ <span id="valFatura">0,00</span></div>
-                <div class="text-[10px] text-slate-500 mt-1">Taxa + consumo real (R$ 8,28/m³)</div>
+                <div class="text-[10px] text-slate-500 mt-1">Estimativa com base na CORSAN</div>
             </div>
         </div>
 
@@ -140,7 +147,7 @@
             
             <div class="lg:col-span-2 card p-0 overflow-hidden">
                 <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
-                    <h3 class="font-black text-[10px] uppercase text-slate-400">Histórico de Auditoria Manual</h3>
+                    <h3 class="font-black text-[10px] uppercase text-slate-400">Histórico de Auditoria (Recentes Primeiro)</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -166,31 +173,44 @@
             <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
             </div>
-            <h3 class="text-xl font-black text-white mb-2">Zerar Auditoria?</h3>
-            <p class="text-slate-400 text-sm mb-6">Esta acção irá apagar todo o histórico de leituras. Esta operação não pode ser desfeita.</p>
+            <h3 class="text-xl font-black text-white mb-2">Zerar Histórico?</h3>
+            <p class="text-slate-400 text-sm mb-6">Esta acção irá apagar todo o histórico de leituras manuais. O valor base da CORSAN não será alterado.</p>
             <div class="flex gap-3">
-                <button onclick="fecharModal()" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
+                <button onclick="fecharModal('modalReset')" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
                 <button onclick="confirmarZerar()" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-500">Confirmar</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL PARA EDITAR BASE CORSAN -->
+    <div id="modalBase" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 p-8 rounded-3xl max-w-sm w-full border border-slate-700 text-center shadow-2xl">
+            <h3 class="text-xl font-black text-white mb-2 italic">Fechar Fatura</h3>
+            <p class="text-slate-400 text-sm mb-6">Insira a leitura de fechamento que consta na fatura da CORSAN (m³).</p>
+            <input type="number" id="inputBaseCorsan" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-3xl font-mono text-center mb-6 focus:border-sky-500 outline-none text-white">
+            <div class="flex gap-3">
+                <button onclick="fecharModal('modalBase')" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
+                <button onclick="salvarBaseCorsan()" class="flex-1 bg-sky-600 py-3 rounded-xl font-bold text-sm hover:bg-sky-500">Salvar Base</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const BASE_CORSAN = 297;
+        let BASE_CORSAN = 297;
         const TAXA_FIXA = 39.32;
         const VALOR_M3 = 8.28;
         const PESSOAS = 4;
         
         let leituras = [
-            { id: 1, val: 29791, label: '03/03 Terça' },
-            { id: 2, val: 29862, label: '04/03 Quarta' },
-            { id: 3, val: 29876, label: '05/03 Quinta' },
-            { id: 4, val: 29901, label: '05/03 Quinta T' },
-            { id: 5, val: 29916, label: '05/03 Quinta N' },
-            { id: 6, val: 29990, label: '06/03 Sexta' },
-            { id: 7, val: 30055, label: '07/03 Sábado' },
-            { id: 8, val: 30084, label: '07/03 Sábado N' },
-            { id: 9, val: 30115, label: '08/03 Domingo' }
+            { id: 1, val: 29791, label: '03/03 Ter' },
+            { id: 2, val: 29862, label: '04/03 Qua' },
+            { id: 3, val: 29876, label: '05/03 Qui' },
+            { id: 4, val: 29901, label: '05/03 Qui T' },
+            { id: 5, val: 29916, label: '05/03 Qui N' },
+            { id: 6, val: 29990, label: '06/03 Sex' },
+            { id: 7, val: 30055, label: '07/03 Sáb' },
+            { id: 8, val: 30084, label: '07/03 Sáb N' },
+            { id: 9, val: 30115, label: '08/03 Dom' }
         ];
 
         function registrar() {
@@ -213,13 +233,28 @@
             document.getElementById('modalReset').style.display = 'flex';
         }
 
-        function fecharModal() {
-            document.getElementById('modalReset').style.display = 'none';
+        function abrirModalBase() {
+            document.getElementById('inputBaseCorsan').value = BASE_CORSAN;
+            document.getElementById('modalBase').style.display = 'flex';
+        }
+
+        function salvarBaseCorsan() {
+            const novoVal = parseInt(document.getElementById('inputBaseCorsan').value);
+            if(novoVal) {
+                BASE_CORSAN = novoVal;
+                document.getElementById('displayBaseCorsan').innerText = BASE_CORSAN;
+                fecharModal('modalBase');
+                atualizar();
+            }
+        }
+
+        function fecharModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
 
         function confirmarZerar() {
             leituras = [];
-            fecharModal();
+            fecharModal('modalReset');
             atualizar();
         }
 
@@ -234,18 +269,20 @@
             const tabela = document.getElementById('historico');
 
             if (leituras.length === 0) {
-                visor.innerHTML = '<div class="text-slate-600 font-mono text-xl p-4 italic">Sem leituras registadas</div>';
+                visor.innerHTML = '<div class="text-slate-600 font-mono text-xl p-4 italic uppercase tracking-widest">Sem Registos</div>';
                 document.getElementById('txtLeitura').innerText = '0,00';
                 document.getElementById('valLitros').innerText = '0 L';
                 document.getElementById('valMedia').innerText = '0 L';
                 document.getElementById('statusPessoa').innerText = '0 L por pessoa / dia';
                 document.getElementById('valFatura').innerText = '0,00';
-                tabela.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 italic">Inicie uma nova medição no painel ao lado.</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 italic">Pronto para nova auditoria.</td></tr>';
                 return;
             }
 
-            const ultima = leituras[leituras.length - 1];
-            const primeira = leituras[0];
+            // Ordenar por data (ID) para cálculos, mas exibir inverso
+            const leiturasOrdenadas = [...leituras].sort((a,b) => a.id - b.id);
+            const ultima = leiturasOrdenadas[leiturasOrdenadas.length - 1];
+            const primeira = leiturasOrdenadas[0];
             
             // 1. Visor
             const s = ultima.val.toString().padStart(6, '0');
@@ -262,7 +299,7 @@
             const litrosFim = getLitros(ultima.val);
             const litrosBaseFatura = BASE_CORSAN * 1000;
             const consumoTotalPeríodo = leituras.length > 1 ? litrosFim - getLitros(primeira.val) : 0;
-            const dias = 5; // Mantido fixo para o exemplo do ciclo
+            const dias = 5; 
             
             const mediaDiaria = Math.round(consumoTotalPeríodo / dias);
             const mediaPorPessoa = Math.round(mediaDiaria / PESSOAS);
@@ -275,18 +312,22 @@
             const valorCalculado = TAXA_FIXA + (m3Faturaveis * VALOR_M3);
             document.getElementById('valFatura').innerText = valorCalculado.toFixed(2).replace('.', ',');
 
-            // 3. Tabela
+            // 3. Tabela (Invertida: Recentes no topo)
             tabela.innerHTML = '';
-            leituras.forEach((l, index) => {
+            const leiturasParaExibir = [...leiturasOrdenadas].reverse();
+            
+            leiturasParaExibir.forEach((l, index) => {
+                // Encontrar o índice original para calcular a parcial correta
+                const idxOriginal = leiturasOrdenadas.findIndex(item => item.id === l.id);
                 const acumuladoCiclo = getLitros(l.val) - litrosBaseFatura;
-                let parcial = index === 0 ? 0 : getLitros(l.val) - getLitros(leituras[index-1].val);
+                let parcial = idxOriginal === 0 ? 0 : getLitros(l.val) - getLitros(leiturasOrdenadas[idxOriginal-1].val);
 
                 const tr = document.createElement('tr');
                 tr.className = 'history-row border-b border-slate-800/50 group';
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-slate-400 text-xs">${l.label}</td>
                     <td class="p-4 text-center font-mono text-white">${l.val}</td>
-                    <td class="p-4 text-center ${parcial > 500 ? 'text-red-400 font-black' : 'text-sky-400'}">${index === 0 ? '-' : '+' + parcial} L</td>
+                    <td class="p-4 text-center ${parcial > 500 ? 'text-red-400 font-black' : 'text-sky-400'}">${idxOriginal === 0 ? '-' : '+' + parcial} L</td>
                     <td class="p-4 text-right font-black text-slate-300">${acumuladoCiclo.toLocaleString()} L</td>
                     <td class="p-4 text-center">
                         <button onclick="removerLeitura(${l.id})" class="btn-delete" title="Remover Registo">
