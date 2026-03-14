@@ -1,345 +1,1082 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaAudit - Auditoria SAGA/CORSAN</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --digit-black: #111111;
-            --digit-red: #991b1b;
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .meter-display {
-            display: flex;
-            gap: 4px;
-            background: #222;
-            padding: 15px;
-            border-radius: 12px;
-            border: 6px solid #444;
-            box-shadow: inset 0 0 30px rgba(0,0,0,1);
-            position: relative;
-        }
-        .digit {
-            width: 42px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 2.3rem;
-            font-weight: 900;
-            color: white;
-            border-radius: 4px;
-        }
-        .digit-black { background: var(--digit-black); border-bottom: 4px solid #000; }
-        .digit-red { background: var(--digit-red); border-bottom: 4px solid #7f1d1d; }
-        
-        .card {
-            background: rgba(30, 41, 59, 0.8);
-            border-radius: 20px;
-            padding: 1.2rem;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .history-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-        
-        .btn-delete {
-            color: #64748b;
-            transition: all 0.2s;
-        }
-        .btn-delete:hover {
-            color: #f87171;
-            transform: scale(1.1);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HydroControl · CORSAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #0b0f19;
+  --s1:      #111827;
+  --s2:      #1a2235;
+  --b1:      #1f2d45;
+  --b2:      #263347;
+  --accent:  #38bdf8;
+  --a2:      #0ea5e9;
+  --green:   #22c55e;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --purple:  #a78bfa;
+  --t1:      #f1f5f9;
+  --t2:      #94a3b8;
+  --t3:      #475569;
+  --r:       14px;
+  --rs:      10px;
+}
+html { font-size:15px; -webkit-text-size-adjust:100%; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--t1); min-height:100vh; line-height:1.5; }
+.app { max-width:960px; margin:0 auto; padding:14px 13px 80px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 0 16px; border-bottom:1px solid var(--b1); margin-bottom:16px; gap:10px;
+}
+.brand { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.brand-icon {
+  width:38px; height:38px; background:linear-gradient(135deg,#0369a1,#38bdf8);
+  border-radius:10px; display:grid; place-items:center; font-size:18px;
+}
+.brand-name { font-weight:700; font-size:1rem; letter-spacing:-.3px; }
+.brand-sub  { font-size:.62rem; color:var(--t3); letter-spacing:.5px; }
+.topbar-meta { text-align:right; font-size:.68rem; color:var(--t3); line-height:1.8; }
+.topbar-meta strong { color:var(--accent); font-family:'JetBrains Mono',monospace; font-weight:500; }
+
+/* ── TOP CARDS ROW ── */
+.top-cards {
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px;
+  margin-bottom:12px;
+}
+@media(min-width:540px){ .top-cards { grid-template-columns: repeat(3, 1fr); } }
+@media(min-width:820px){ .top-cards { grid-template-columns: repeat(5, 1fr); } }
+
+.tc {
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:15px 14px 13px; display:flex; flex-direction:column; gap:4px;
+  position:relative; overflow:hidden;
+}
+.tc::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:var(--r) var(--r) 0 0;
+}
+.tc.blue::before   { background:linear-gradient(90deg,#075985,var(--accent)); }
+.tc.green::before  { background:linear-gradient(90deg,#14532d,var(--green)); }
+.tc.warn::before   { background:linear-gradient(90deg,#78350f,var(--warn)); }
+.tc.purple::before { background:linear-gradient(90deg,#4c1d95,var(--purple)); }
+.tc.danger::before { background:linear-gradient(90deg,#7f1d1d,var(--danger)); }
+
+.tc-label { font-size:.6rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--t3); font-weight:600; }
+.tc-value { font-family:'JetBrains Mono',monospace; font-size:1.3rem; font-weight:700; line-height:1.1; margin-top:2px; }
+.tc-sub   { font-size:.62rem; color:var(--t3); margin-top:2px; }
+.tc-badge {
+  position:absolute; top:14px; right:12px;
+  font-size:.6rem; font-weight:700; padding:2px 7px;
+  border-radius:99px;
+}
+.badge-blue   { background:rgba(56,189,248,.12); color:var(--accent); }
+.badge-green  { background:rgba(34,197,94,.12);  color:var(--green); }
+.badge-warn   { background:rgba(245,158,11,.12); color:var(--warn); }
+.badge-purple { background:rgba(167,139,250,.12);color:var(--purple); }
+.badge-danger { background:rgba(239,68,68,.12);  color:var(--danger); }
+
+/* ── METER + GAUGE CARD ── */
+.meter-card {
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:18px; margin-bottom:12px;
+}
+.meter-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;
+}
+.meter-title { font-size:.65rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--t3); font-weight:600; }
+.meter-badges { display:flex; gap:7px; flex-wrap:wrap; }
+.mbadge {
+  background:var(--s2); border:1px solid var(--b2); border-radius:6px;
+  padding:3px 9px; font-size:.66rem; color:var(--t2); font-family:'JetBrains Mono',monospace;
+}
+.mbadge.active { border-color:rgba(56,189,248,.3); color:var(--accent); }
+
+.meter-body { display:grid; grid-template-columns:1fr auto; align-items:center; gap:14px; }
+
+/* Reading display — shows black digits vs red decimals */
+.reading-display {
+  display:flex; align-items:baseline; gap:0; flex-wrap:wrap;
+}
+.reading-black {
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(2.4rem,9vw,3.6rem);
+  font-weight:700; color:var(--t1); letter-spacing:-2px; line-height:1;
+}
+.reading-dot {
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(1.6rem,5vw,2.2rem);
+  font-weight:400; color:var(--t3); margin:0 1px;
+}
+.reading-red {
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(1.4rem,4vw,2rem);
+  font-weight:600; color:#f87171; letter-spacing:-1px; line-height:1;
+}
+.reading-unit { font-size:.75rem; color:var(--t3); margin-left:8px; align-self:flex-end; padding-bottom:4px; }
+
+.reading-legend {
+  display:flex; gap:14px; margin-top:10px; flex-wrap:wrap;
+}
+.legend-item { display:flex; align-items:center; gap:6px; font-size:.65rem; color:var(--t3); }
+.legend-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+.meter-chips { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; }
+.chip-label  { font-size:.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3); margin-bottom:2px; }
+.chip-val    { font-family:'JetBrains Mono',monospace; font-size:.88rem; font-weight:600; }
+
+/* Gauge */
+.gauge-wrap { position:relative; width:90px; height:90px; flex-shrink:0; }
+.gauge-svg  { transform:rotate(-90deg); display:block; }
+.gauge-track { fill:none; stroke:var(--b2); stroke-width:9; }
+.gauge-fill  {
+  fill:none; stroke:url(#gGrad); stroke-width:9; stroke-linecap:round;
+  stroke-dasharray:226; stroke-dashoffset:226;
+  transition:stroke-dashoffset 1.3s cubic-bezier(.34,1.56,.64,1);
+}
+.gauge-center {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+.gauge-pct   { font-family:'JetBrains Mono',monospace; font-size:1.2rem; font-weight:700; color:var(--t1); line-height:1; }
+.gauge-label { font-size:.55rem; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
+.gauge-sub   { font-size:.62rem; color:var(--t3); text-align:center; line-height:1.5; margin-top:5px; }
+
+/* ── SECTION LABEL ── */
+.sec {
+  font-size:.63rem; text-transform:uppercase; letter-spacing:1.5px;
+  color:var(--t3); font-weight:600; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec::after { content:''; flex:1; height:1px; background:var(--b1); }
+
+/* ── CHART ── */
+.chart-card {
+  background:var(--s1); border:1px solid var(--b1);
+  border-radius:var(--r); padding:16px 14px; margin-bottom:12px; overflow:hidden;
+}
+canvas#chart { display:block; width:100%!important; height:160px!important; }
+
+/* ── TWO COL ── */
+.two-col { display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:12px; }
+@media(min-width:620px){ .two-col { grid-template-columns:1fr 1fr; } }
+.card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); padding:16px 14px; }
+
+/* ── INVOICE ── */
+.inv-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--b1); font-size:.8rem; }
+.inv-row:last-child { border-bottom:none; }
+.inv-label { color:var(--t2); }
+.inv-value { font-family:'JetBrains Mono',monospace; color:var(--t1); font-weight:500; }
+.inv-total .inv-label { color:var(--t1); font-weight:700; }
+.inv-total .inv-value { color:var(--accent); font-size:.95rem; }
+.inv-note {
+  margin-top:11px; background:rgba(34,197,94,.06);
+  border:1px solid rgba(34,197,94,.15); border-radius:8px;
+  padding:9px 11px; font-size:.68rem; color:var(--green); line-height:1.7;
+}
+.inv-fixed {
+  margin-top:8px; background:rgba(167,139,250,.06);
+  border:1px solid rgba(167,139,250,.15); border-radius:8px;
+  padding:9px 11px; font-size:.68rem; color:var(--purple); line-height:1.7;
+}
+
+/* ── FORM ── */
+.fg2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.fg1 { margin-bottom:8px; }
+input[type=text], input[type=number] {
+  background:var(--s2); border:1px solid var(--b2); border-radius:8px;
+  padding:9px 11px; color:var(--t1); font-family:'JetBrains Mono',monospace;
+  font-size:.78rem; outline:none; width:100%;
+  transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none; appearance:none;
+}
+input:focus { border-color:var(--a2); box-shadow:0 0 0 3px rgba(14,165,233,.1); }
+input::placeholder { color:var(--t3); }
+.btn {
+  width:100%; background:linear-gradient(135deg,#075985,#38bdf8);
+  border:none; border-radius:8px; padding:10px; color:#fff;
+  font-family:'Inter',sans-serif; font-weight:600; font-size:.85rem;
+  cursor:pointer; transition:opacity .2s,transform .1s;
+  margin-bottom:12px; letter-spacing:.2px;
+}
+.btn:hover { opacity:.85; }
+.btn:active { transform:scale(.98); }
+.form-hint { font-size:.63rem; color:var(--t3); line-height:1.7; }
+
+/* PROGRESS */
+.prog-head { display:flex; justify-content:space-between; font-size:.7rem; color:var(--t2); margin-bottom:5px; }
+.prog-track { height:6px; background:var(--b2); border-radius:99px; overflow:hidden; margin-bottom:4px; }
+.prog-fill  { height:100%; border-radius:99px; background:linear-gradient(90deg,#075985,#38bdf8); transition:width 1s ease; }
+.prog-labs  { display:flex; justify-content:space-between; font-size:.6rem; color:var(--t3); }
+
+/* TABLE */
+.table-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); margin-bottom:12px; overflow:hidden; }
+.table-head { padding:14px 14px 10px; border-bottom:1px solid var(--b1); }
+.table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table { width:100%; border-collapse:collapse; min-width:520px; }
+th {
+  font-size:.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3);
+  font-weight:600; padding:9px 12px; text-align:left;
+  background:var(--s2); border-bottom:1px solid var(--b1); white-space:nowrap;
+}
+td { padding:9px 12px; font-size:.77rem; border-bottom:1px solid var(--b1); white-space:nowrap; vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tbody tr:hover td { background:rgba(255,255,255,.018); }
+.mono { font-family:'JetBrains Mono',monospace; font-weight:500; }
+.pill { display:inline-block; padding:2px 8px; border-radius:99px; font-size:.63rem; font-weight:600; }
+.pill-green  { background:rgba(34,197,94,.1);  color:var(--green); }
+.pill-warn   { background:rgba(245,158,11,.1); color:var(--warn); }
+.pill-danger { background:rgba(239,68,68,.1);  color:var(--danger); }
+.bar-cell { display:flex; align-items:center; gap:5px; }
+.bar-track { width:52px; height:4px; background:var(--b2); border-radius:99px; overflow:hidden; flex-shrink:0; }
+.bar-fill  { height:100%; border-radius:99px; }
+
+/* reading in table: black digits styled */
+.td-reading { display:flex; align-items:baseline; gap:1px; }
+.td-black { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--t1); font-size:.82rem; }
+.td-sep   { font-family:'JetBrains Mono',monospace; color:var(--t3); font-size:.78rem; }
+.td-red   { font-family:'JetBrains Mono',monospace; color:#f87171; font-size:.76rem; }
+
+/* PULSE */
+.pulse { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(34,197,94,.5); animation:pa 2s infinite; display:inline-block; margin-right:5px; vertical-align:middle; }
+@keyframes pa { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:22px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--s2); border:1px solid var(--b2); border-radius:10px;
+  padding:10px 20px; font-size:.78rem; color:var(--t1); z-index:100;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.5);
+  pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* colors */
+.c-blue   { color:var(--accent); }
+.c-green  { color:var(--green); }
+.c-warn   { color:var(--warn); }
+.c-danger { color:var(--danger); }
+.c-purple { color:var(--purple); }
+.c-t2     { color:var(--t2); }
+
+/* ── CONFIG MODAL ── */
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+  opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.modal-backdrop.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--s1); border:1px solid var(--b2); border-radius:var(--r);
+  width:100%; max-width:460px; padding:24px 20px 20px;
+  transform:translateY(20px); transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.modal-backdrop.open .modal { transform:translateY(0); }
+.modal-title {
+  font-family:'Inter',sans-serif; font-weight:700; font-size:1rem;
+  color:var(--t1); margin-bottom:4px;
+}
+.modal-sub { font-size:.7rem; color:var(--t3); margin-bottom:20px; line-height:1.5; }
+.modal-field { margin-bottom:14px; }
+.modal-label { font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3); font-weight:600; margin-bottom:5px; display:block; }
+.modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn-row { display:flex; gap:10px; margin-top:20px; }
+.btn-cancel {
+  flex:1; background:var(--s2); border:1px solid var(--b2); border-radius:8px;
+  padding:10px; color:var(--t2); font-family:'Inter',sans-serif;
+  font-weight:600; font-size:.85rem; cursor:pointer; transition:opacity .2s;
+}
+.btn-cancel:hover { opacity:.8; }
+.btn-save {
+  flex:2; background:linear-gradient(135deg,#075985,#38bdf8); border:none;
+  border-radius:8px; padding:10px; color:#fff; font-family:'Inter',sans-serif;
+  font-weight:600; font-size:.85rem; cursor:pointer; transition:opacity .2s;
+}
+.btn-save:hover { opacity:.85; }
+.btn-clear-all {
+  width:100%; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2);
+  border-radius:8px; padding:9px; color:var(--danger); font-family:'Inter',sans-serif;
+  font-weight:600; font-size:.8rem; cursor:pointer; transition:opacity .2s; margin-top:8px;
+}
+.btn-clear-all:hover { opacity:.8; }
+.config-btn {
+  display:flex; align-items:center; gap:6px;
+  background:var(--s2); border:1px solid var(--b2); border-radius:8px;
+  padding:5px 12px; color:var(--t2); font-size:.72rem; font-weight:600;
+  cursor:pointer; transition:border-color .2s, color .2s; flex-shrink:0;
+}
+.config-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+</style>
 </head>
-<body class="p-4 md:p-8">
+<body>
+<div class="app">
 
-    <div class="max-w-5xl mx-auto">
-        <!-- HEADER COM DADOS DA FAMÍLIA E LEITURA BASE -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="card text-center border-b-2 border-b-blue-500">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Família</span>
-                <div class="text-xl font-black text-white">4 Pessoas</div>
-                <div class="text-[9px] text-slate-400">2 Adultos + 2 Crianças</div>
-            </div>
-            <div class="card text-center relative group">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Última Corsan</span>
-                <div class="text-xl font-black text-sky-400"><span id="displayBaseCorsan">297</span> m³</div>
-                <button onclick="abrirModalBase()" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-            </div>
-            <div class="card text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Valor Água (Fatura)</span>
-                <div class="text-xl font-black text-sky-400">R$ 124,20</div>
-            </div>
-            <div class="card text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Taxa Serviço</span>
-                <div class="text-xl font-black text-white">R$ 39,32</div>
-            </div>
-            <div class="card text-center border-b-2 border-b-red-500">
-                <span class="text-[10px] uppercase font-bold text-slate-500">Status</span>
-                <div class="text-xl font-black text-red-400 uppercase italic">Atenção</div>
-            </div>
-        </div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">💧</div>
+      <div>
+        <div class="brand-name">HydroControl</div>
+        <div class="brand-sub">CORSAN · Sandro Fagundes</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="topbar-meta">
+        <div>Mat. <strong>2822441-8</strong></div>
+        <div>Med. <strong>Y23SG2607429</strong></div>
+      </div>
+      <button class="config-btn" onclick="openConfig()">⚙ Nova fatura</button>
+    </div>
+  </div>
 
-        <!-- VISOR SAGA -->
-        <div class="card mb-8 flex flex-col items-center py-10 bg-slate-800/40 border-2 border-slate-700 relative">
-            <button onclick="zerarLeituras()" class="absolute top-4 right-4 text-[9px] font-bold text-slate-500 border border-slate-700 px-3 py-1 rounded-full hover:bg-red-500/10 hover:text-red-400 transition-all uppercase flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                Zerar Histórico
-            </button>
-            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Leitura Atual no Hidrómetro</h2>
-            <div class="meter-display" id="sagaMeter"></div>
-            <div class="mt-6 text-slate-400 font-bold text-sm">Visor: <span id="txtLeitura" class="text-white">0</span> m³</div>
-        </div>
+  <!-- ══ TOP CARDS ══ -->
+  <div class="top-cards">
 
-        <!-- DASHBOARD DE AUDITORIA -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card bg-blue-900/10">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Média Diária Atual</h3>
-                <div class="text-4xl font-black text-red-400" id="valMedia">0</div>
-                <div class="text-[10px] text-slate-500 mt-1 uppercase font-bold" id="statusPessoa">0 L por pessoa</div>
-            </div>
-            <div class="card bg-amber-900/10">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Total no Período</h3>
-                <div class="text-4xl font-black text-amber-400" id="valLitros">0</div>
-                <div class="text-[10px] text-slate-500 mt-1 italic">Consumo Real (Desde a Base)</div>
-            </div>
-            <div class="card bg-emerald-900/10">
-                <h3 class="text-[10px] font-black uppercase text-slate-400 mb-1">Previsão de Fatura</h3>
-                <div class="text-4xl font-black text-emerald-400">R$ <span id="valFatura">0,00</span></div>
-                <div class="text-[10px] text-slate-500 mt-1">Estimativa com base na CORSAN</div>
-            </div>
-        </div>
-
-        <!-- MONITORAMENTO ATIVO -->
-        <div class="card mb-8 bg-slate-900/50 border-sky-500/20">
-            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                <span class="w-2 h-2 bg-sky-500 rounded-full animate-pulse"></span>
-                Monitoramento de Consumo e Gastos
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                    <p class="text-slate-400">Dados contratuais: Fatura base de <b class="text-white">R$ 163,52</b> (água + taxa). Seu custo variável atual é <b class="text-white">R$ 8,28 por m³</b>.</p>
-                </div>
-                <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                    <p class="text-slate-400">Status Preventivo: <b class="text-white">Frequência de medição alta</b> permite detectar picos de consumo rapidamente.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ENTRADA E TABELA -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="card h-fit">
-                <h3 class="text-xs font-black uppercase text-sky-400 mb-4 text-center">Novo Lançamento</h3>
-                <input type="number" id="inputManual" placeholder="Ex: 30115" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-3xl font-mono text-center mb-4 focus:border-sky-500 outline-none text-white">
-                <button onclick="registrar()" class="w-full bg-sky-600 py-4 rounded-xl font-black uppercase text-xs hover:bg-sky-500 transition-all shadow-lg">Registar Leitura</button>
-            </div>
-            
-            <div class="lg:col-span-2 card p-0 overflow-hidden">
-                <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
-                    <h3 class="font-black text-[10px] uppercase text-slate-400">Histórico de Auditoria (Recentes Primeiro)</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="text-[9px] text-slate-500 uppercase font-black bg-slate-900/30">
-                            <tr>
-                                <th class="p-4">Período</th>
-                                <th class="p-4 text-center">Visor</th>
-                                <th class="p-4 text-center">Consumo (L)</th>
-                                <th class="p-4 text-right">Acumulado</th>
-                                <th class="p-4 text-center">Acções</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historico" class="text-sm"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <!-- Última leitura CORSAN -->
+    <div class="tc blue">
+      <span class="tc-badge badge-blue">CORSAN</span>
+      <div class="tc-label">Última leitura CORSAN</div>
+      <div class="tc-value c-blue" id="tcCorsan">297 m³</div>
+      <div class="tc-sub">Jan/2026 · dígitos pretos</div>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO PARA ZERAR -->
-    <div id="modalReset" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
-        <div class="bg-slate-800 p-8 rounded-3xl max-w-sm w-full border border-slate-700 text-center shadow-2xl">
-            <div class="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </div>
-            <h3 class="text-xl font-black text-white mb-2">Zerar Histórico?</h3>
-            <p class="text-slate-400 text-sm mb-6">Esta acção irá apagar todo o histórico de leituras manuais. O valor base da CORSAN não será alterado.</p>
-            <div class="flex gap-3">
-                <button onclick="fecharModal('modalReset')" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
-                <button onclick="confirmarZerar()" class="flex-1 bg-red-600 py-3 rounded-xl font-bold text-sm hover:bg-red-500">Confirmar</button>
-            </div>
-        </div>
+    <!-- Última leitura manual -->
+    <div class="tc green">
+      <span class="tc-badge badge-green">MANUAL</span>
+      <div class="tc-label">Minha última leitura</div>
+      <div class="tc-value c-green" id="tcManual">303 m³</div>
+      <div class="tc-sub" id="tcManualDate">13/03/2026</div>
     </div>
 
-    <!-- MODAL PARA EDITAR BASE CORSAN -->
-    <div id="modalBase" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
-        <div class="bg-slate-800 p-8 rounded-3xl max-w-sm w-full border border-slate-700 text-center shadow-2xl">
-            <h3 class="text-xl font-black text-white mb-2 italic">Fechar Fatura</h3>
-            <p class="text-slate-400 text-sm mb-6">Insira a leitura de fechamento que consta na fatura da CORSAN (m³).</p>
-            <input type="number" id="inputBaseCorsan" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl text-3xl font-mono text-center mb-6 focus:border-sky-500 outline-none text-white">
-            <div class="flex gap-3">
-                <button onclick="fecharModal('modalBase')" class="flex-1 bg-slate-700 py-3 rounded-xl font-bold text-sm">Cancelar</button>
-                <button onclick="salvarBaseCorsan()" class="flex-1 bg-sky-600 py-3 rounded-xl font-bold text-sm hover:bg-sky-500">Salvar Base</button>
-            </div>
-        </div>
+    <!-- Consumo do ciclo -->
+    <div class="tc warn">
+      <span class="tc-badge badge-warn">CICLO</span>
+      <div class="tc-label">Consumo desde CORSAN</div>
+      <div class="tc-value c-warn" id="tcCycle">6 m³</div>
+      <div class="tc-sub" id="tcAvgSub">média — m³/dia</div>
     </div>
 
-    <script>
-        let BASE_CORSAN = 297;
-        const TAXA_FIXA = 39.32;
-        const VALOR_M3 = 8.28;
-        const PESSOAS = 4;
-        
-        let leituras = [
-            { id: 1, val: 29791, label: '03/03 Ter' },
-            { id: 2, val: 29862, label: '04/03 Qua' },
-            { id: 3, val: 29876, label: '05/03 Qui' },
-            { id: 4, val: 29901, label: '05/03 Qui T' },
-            { id: 5, val: 29916, label: '05/03 Qui N' },
-            { id: 6, val: 29990, label: '06/03 Sex' },
-            { id: 7, val: 30055, label: '07/03 Sáb' },
-            { id: 8, val: 30084, label: '07/03 Sáb N' },
-            { id: 9, val: 30115, label: '08/03 Dom' }
-        ];
+    <!-- Taxa fixa -->
+    <div class="tc purple">
+      <span class="tc-badge badge-purple">FIXO</span>
+      <div class="tc-label">Taxa de serviço</div>
+      <div class="tc-value c-purple">R$ 39,32</div>
+      <div class="tc-sub">serviço básico CORSAN</div>
+    </div>
 
-        function registrar() {
-            const input = document.getElementById('inputManual');
-            const val = parseInt(input.value);
-            if(!val) return;
-            const agora = new Date();
-            const label = agora.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}) + ' ' + agora.toLocaleDateString('pt-BR', {weekday:'short'});
-            leituras.push({ id: Date.now(), val: val, label: label });
-            input.value = '';
-            atualizar();
-        }
+    <!-- Projeção de valor -->
+    <div class="tc danger">
+      <span class="tc-badge badge-danger">PROJEÇÃO</span>
+      <div class="tc-label">Estimativa da fatura</div>
+      <div class="tc-value c-danger" id="tcProjValue">R$ —</div>
+      <div class="tc-sub" id="tcProjSub">taxa + consumo projetado</div>
+    </div>
 
-        function removerLeitura(id) {
-            leituras = leituras.filter(l => l.id !== id);
-            atualizar();
-        }
+  </div>
 
-        function zerarLeituras() {
-            document.getElementById('modalReset').style.display = 'flex';
-        }
+  <!-- ══ MEDIDOR VISUAL ══ -->
+  <div class="meter-card">
+    <div class="meter-header">
+      <span class="meter-title">Medidor físico · leitura atual</span>
+      <div class="meter-badges">
+        <span class="mbadge">Y23SG2607429</span>
+        <span class="mbadge active" id="mDateBadge">13/03/2026</span>
+      </div>
+    </div>
 
-        function abrirModalBase() {
-            document.getElementById('inputBaseCorsan').value = BASE_CORSAN;
-            document.getElementById('modalBase').style.display = 'flex';
-        }
+    <div class="meter-body">
+      <div>
+        <!-- Reading: black = CORSAN digits, red = decimal -->
+        <div class="reading-display">
+          <span class="reading-black" id="rdBlack">030</span>
+          <span class="reading-dot">.</span>
+          <span class="reading-red" id="rdRed">357</span>
+          <span class="reading-unit">m³</span>
+        </div>
 
-        function salvarBaseCorsan() {
-            const novoVal = parseInt(document.getElementById('inputBaseCorsan').value);
-            if(novoVal) {
-                BASE_CORSAN = novoVal;
-                document.getElementById('displayBaseCorsan').innerText = BASE_CORSAN;
-                fecharModal('modalBase');
-                atualizar();
-            }
-        }
+        <div class="reading-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--t1)"></div>
+            <span>Dígitos pretos = leitura CORSAN (<strong id="legendCorsan" style="color:var(--t1)">030</strong> m³ inteiro)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f87171"></div>
+            <span>Dígitos vermelhos = décimos (não faturados)</span>
+          </div>
+        </div>
 
-        function fecharModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
+        <div class="meter-chips">
+          <div>
+            <div class="chip-label">Leitura CORSAN base</div>
+            <div class="chip-val c-blue">297 m³</div>
+          </div>
+          <div>
+            <div class="chip-label">Consumido no ciclo</div>
+            <div class="chip-val c-warn" id="chipCycle">6 m³</div>
+          </div>
+          <div>
+            <div class="chip-label">Projeção mensal</div>
+            <div class="chip-val c-green" id="chipProj">— m³</div>
+          </div>
+          <div>
+            <div class="chip-label">Status</div>
+            <div class="chip-val" style="font-size:.8rem;padding-top:2px"><span class="pulse"></span><span id="statusText">Normal</span></div>
+          </div>
+        </div>
+      </div>
 
-        function confirmarZerar() {
-            leituras = [];
-            fecharModal('modalReset');
-            atualizar();
-        }
+      <!-- Gauge -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" width="90" height="90" viewBox="0 0 90 90">
+            <defs>
+              <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#075985"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="45" cy="45" r="36"/>
+            <circle class="gauge-fill" id="gaugeFill" cx="45" cy="45" r="36"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-pct" id="gaugePct">—</div>
+            <div class="gauge-label">franquia</div>
+          </div>
+        </div>
+        <div class="gauge-sub" id="gaugeSub">Franquia: 15 m³<br>R$ 163,52</div>
+      </div>
+    </div>
+  </div>
 
-        function getLitros(v) { 
-            const m3 = Math.floor(v/100);
-            const litrosRestantes = (v % 100) * 10;
-            return (m3 * 1000) + litrosRestantes;
-        }
+  <!-- ══ CHART ══ -->
+  <div class="chart-card">
+    <div class="sec">Consumo diário — dígitos pretos (m³ inteiros)</div>
+    <canvas id="chart"></canvas>
+  </div>
 
-        function atualizar() {
-            const visor = document.getElementById('sagaMeter');
-            const tabela = document.getElementById('historico');
+  <!-- ══ TWO COL ══ -->
+  <div class="two-col">
 
-            if (leituras.length === 0) {
-                visor.innerHTML = '<div class="text-slate-600 font-mono text-xl p-4 italic uppercase tracking-widest">Sem Registos</div>';
-                document.getElementById('txtLeitura').innerText = '0,00';
-                document.getElementById('valLitros').innerText = '0 L';
-                document.getElementById('valMedia').innerText = '0 L';
-                document.getElementById('statusPessoa').innerText = '0 L por pessoa / dia';
-                document.getElementById('valFatura').innerText = '0,00';
-                tabela.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 italic">Pronto para nova auditoria.</td></tr>';
-                return;
-            }
+    <!-- FORM -->
+    <div class="card">
+      <div class="sec">Registrar nova leitura</div>
 
-            // Ordenar por data (ID) para cálculos, mas exibir inverso
-            const leiturasOrdenadas = [...leituras].sort((a,b) => a.id - b.id);
-            const ultima = leiturasOrdenadas[leiturasOrdenadas.length - 1];
-            const primeira = leiturasOrdenadas[0];
-            
-            // 1. Visor
-            const s = ultima.val.toString().padStart(6, '0');
-            visor.innerHTML = '';
-            for(let i=0; i<6; i++) {
-                const d = document.createElement('div');
-                d.className = i < 4 ? 'digit digit-black' : 'digit digit-red';
-                d.innerText = s[i];
-                visor.appendChild(d);
-            }
-            document.getElementById('txtLeitura').innerText = (ultima.val / 100).toFixed(2).replace('.', ',');
+      <div class="fg2">
+        <input type="text"   id="inDate" placeholder="Data  DD/MM" maxlength="5">
+        <input type="text"   id="inPer"  placeholder="Período (manhã…)" maxlength="20">
+      </div>
+      <div class="fg1">
+        <input type="number" id="inVal"  placeholder="Leitura completa ex: 030.420" step="0.001">
+      </div>
+      <button class="btn" onclick="addReading()">＋ Registrar leitura</button>
 
-            // 2. Cálculos
-            const litrosFim = getLitros(ultima.val);
-            const litrosBaseFatura = BASE_CORSAN * 1000;
-            const consumoTotalPeríodo = leituras.length > 1 ? litrosFim - getLitros(primeira.val) : 0;
-            const dias = 5; 
-            
-            const mediaDiaria = Math.round(consumoTotalPeríodo / dias);
-            const mediaPorPessoa = Math.round(mediaDiaria / PESSOAS);
+      <div class="sec" style="margin-bottom:8px">Projeção do ciclo</div>
+      <div class="prog-head">
+        <span>Consumido: <strong class="c-warn" id="progUsed">—</strong></span>
+        <span>Franquia: <span id="progFranchiseLabel">15 m³</span></span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-labs">
+        <span>0 m³</span>
+        <span class="c-blue" id="progProj">proj. — m³</span>
+        <span>15 m³</span>
+      </div>
 
-            document.getElementById('valLitros').innerText = (litrosFim - litrosBaseFatura).toLocaleString() + ' L';
-            document.getElementById('valMedia').innerText = mediaDiaria + ' L';
-            document.getElementById('statusPessoa').innerText = mediaPorPessoa + ' L por pessoa / dia';
+      <div class="form-hint" style="margin-top:12px">
+        💡 <strong style="color:var(--t2)">Como ler o medidor:</strong><br>
+        Digite o valor completo ex: <strong style="color:var(--t1)">030.420</strong><br>
+        A CORSAN fatura apenas os dígitos pretos: <strong style="color:var(--t1)">030</strong> = 30 m³<br>
+        Os dígitos vermelhos (.420) não são faturados.
+      </div>
+    </div>
 
-            const m3Faturaveis = Math.floor(ultima.val/100) - BASE_CORSAN;
-            const valorCalculado = TAXA_FIXA + (m3Faturaveis * VALOR_M3);
-            document.getElementById('valFatura').innerText = valorCalculado.toFixed(2).replace('.', ',');
+    <!-- INVOICE -->
+    <div class="card">
+      <div class="sec" id="invoiceSecTitle">Fatura Jan/2026</div>
+      <div id="invoiceCardContent">
+        <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">Jan/2026</span></div>
+        <div class="inv-row"><span class="inv-label">Leitura base</span><span class="inv-value mono c-blue">297 m³</span></div>
+        <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">15 m³</span></div>
+        <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">R$ 124,20</span></div>
+        <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value c-warn">R$ 8,28/m³</span></div>
+        <div class="inv-row"><span class="inv-label">Taxa fixa</span><span class="inv-value">R$ 39,32</span></div>
+        <div class="inv-row inv-total"><span class="inv-label">Total</span><span class="inv-value">R$ 163,52</span></div>
+        <div class="inv-fixed">📌 Taxa de serviço: <strong>R$ 39,32/mês</strong> (fixa)</div>
+        <div class="inv-note">✓ Custo por m³: <strong>R$ 8,28</strong> · Ciclo: 31 dias</div>
+      </div>
+    </div>
+  </div>
 
-            // 3. Tabela (Invertida: Recentes no topo)
-            tabela.innerHTML = '';
-            const leiturasParaExibir = [...leiturasOrdenadas].reverse();
-            
-            leiturasParaExibir.forEach((l, index) => {
-                // Encontrar o índice original para calcular a parcial correta
-                const idxOriginal = leiturasOrdenadas.findIndex(item => item.id === l.id);
-                const acumuladoCiclo = getLitros(l.val) - litrosBaseFatura;
-                let parcial = idxOriginal === 0 ? 0 : getLitros(l.val) - getLitros(leiturasOrdenadas[idxOriginal-1].val);
+  <!-- ══ TABLE ══ -->
+  <div class="table-card">
+    <div class="table-head">
+      <div class="sec" style="margin-bottom:0">Histórico de leituras manuais</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Período</th>
+            <th>Leitura completa</th>
+            <th>M³ CORSAN</th>
+            <th>Δ desde base (297)</th>
+            <th>Cons. entre leit.</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-                const tr = document.createElement('tr');
-                tr.className = 'history-row border-b border-slate-800/50 group';
-                tr.innerHTML = `
-                    <td class="p-4 font-bold text-slate-400 text-xs">${l.label}</td>
-                    <td class="p-4 text-center font-mono text-white">${l.val}</td>
-                    <td class="p-4 text-center ${parcial > 500 ? 'text-red-400 font-black' : 'text-sky-400'}">${idxOriginal === 0 ? '-' : '+' + parcial} L</td>
-                    <td class="p-4 text-right font-black text-slate-300">${acumuladoCiclo.toLocaleString()} L</td>
-                    <td class="p-4 text-center">
-                        <button onclick="removerLeitura(${l.id})" class="btn-delete" title="Remover Registo">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                        </button>
-                    </td>
-                `;
-                tabela.appendChild(tr);
-            });
-        }
+</div>
+<!-- ══ CONFIG MODAL ══ -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeConfigOutside(event)">
+  <div class="modal">
+    <div class="modal-title">⚙ Atualizar dados da fatura</div>
+    <div class="modal-sub">
+      Use quando chegar a nova fatura da CORSAN.<br>
+      Atualize a leitura base, valor e reinicie o ciclo.
+    </div>
 
-        atualizar();
-    </script>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label class="modal-label">Leitura base CORSAN (m³)</label>
+        <input type="number" id="cfgBase" placeholder="ex: 312">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Consumo faturado (m³)</label>
+        <input type="number" id="cfgFranchise" placeholder="ex: 15">
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <div class="modal-field">
+        <label class="modal-label">Valor água (R$)</label>
+        <input type="number" id="cfgWater" placeholder="ex: 124.20" step="0.01">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Taxa fixa (R$)</label>
+        <input type="number" id="cfgFixed" placeholder="ex: 39.32" step="0.01">
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <div class="modal-field">
+        <label class="modal-label">Data leitura CORSAN</label>
+        <input type="text" id="cfgCycleDate" placeholder="DD/MM/AAAA">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Dias do ciclo</label>
+        <input type="number" id="cfgCycleDays" placeholder="ex: 31">
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label">Referência (ex: Fev/2026)</label>
+      <input type="text" id="cfgRef" placeholder="ex: Fev/2026" maxlength="20">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeConfig()">Cancelar</button>
+      <button class="btn-save"   onclick="saveConfig()">✓ Salvar e reiniciar ciclo</button>
+    </div>
+
+    <button class="btn-clear-all" onclick="clearReadings()">
+      🗑 Zerar todas as leituras manuais do ciclo anterior
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONFIG ── */
+const CORSAN_BASE     = 297;    // última leitura CORSAN Jan/2026 (dígitos pretos)
+const LAST_BILL_WATER = 124.20; // valor água última fatura (sem taxa fixa)
+const FRANCHISE       = 15;     // m³ consumidos na última fatura
+const FIXED_FEE       = 39.32;  // taxa serviço básico fixa (R$)
+const COST_M3         = +(LAST_BILL_WATER / FRANCHISE).toFixed(4); // = R$8,28/m³
+// Ciclo CORSAN: leitura anterior 282→297 ocorreu em ~22/Jan/2026 (31 dias de ciclo)
+const CYCLE_START_DATE = new Date(2026, 0, 22); // data leitura base CORSAN
+const CYCLE_DAYS_REAL  = 31;                    // duração do ciclo em dias
+
+/* ── DATA: cada leitura tem o valor COMPLETO do medidor ── */
+let readings = [
+  { date:'03/03', period:'Terça manhã',   v:29.791 },
+  { date:'04/03', period:'Quarta',        v:29.862 },
+  { date:'05/03', period:'Quinta manhã',  v:29.876 },
+  { date:'05/03', period:'Quinta tarde',  v:29.901 },
+  { date:'05/03', period:'Quinta noite',  v:29.916 },
+  { date:'06/03', period:'Sexta',         v:29.990 },
+  { date:'07/03', period:'Sábado manhã',  v:30.055 },
+  { date:'07/03', period:'Sábado noite',  v:30.084 },
+  { date:'08/03', period:'Domingo',       v:30.158 },
+  { date:'09/03', period:'Segunda',       v:30.187 },
+  { date:'09/03', period:'Segunda tarde', v:30.209 },
+  { date:'10/03', period:'Terça',         v:30.219 },
+  { date:'11/03', period:'Quarta',        v:30.239 },
+  { date:'11/03', period:'Quarta noite',  v:30.293 },
+  { date:'12/03', period:'Quinta',        v:30.298 },
+  { date:'13/03', period:'Sexta',         v:30.357 },
+];
+
+/* ── HELPERS ── */
+// CORSAN only reads the integer part (floor) of the meter value
+// e.g. 30.357 → 30 m³  |  29.862 → 29 m³
+const corsanRead = v => Math.floor(v);
+
+// split display: "030.357" → black="030", red="357"
+function splitReading(v) {
+  const intPart  = Math.floor(v);
+  const fracPart = Math.round((v - intPart) * 1000);
+  return {
+    black: String(intPart).padStart(3, '0'),
+    red:   String(fracPart).padStart(3, '0'),
+  };
+}
+
+// consumption between two readings in CORSAN integer m³
+const consCorsan = (a, b) => corsanRead(b) - corsanRead(a);
+
+// consumption in raw decimal for chart precision
+const consRaw = (i) => i === 0 ? 0 : +(readings[i].v - readings[i-1].v).toFixed(3);
+
+const fmt1 = v => v.toFixed(1).replace('.',',');
+const fmt3 = v => v.toFixed(3).replace('.',',');
+
+/* daily map using raw values for chart */
+function dailyMap() {
+  const m = {};
+  readings.forEach((r, i) => {
+    if (!m[r.date]) m[r.date] = { date: r.date, total: 0 };
+    m[r.date].total = +(m[r.date].total + consRaw(i)).toFixed(3);
+  });
+  return Object.values(m);
+}
+
+/* ── GAUGE ── */
+function setGauge(pct) {
+  const r = 36, C = 2 * Math.PI * r; // ~226
+  const fill = document.getElementById('gaugeFill');
+  fill.style.strokeDasharray  = C;
+  fill.style.strokeDashoffset = C * (1 - Math.min(pct, 100) / 100);
+  document.getElementById('gaugePct').textContent = Math.round(pct) + '%';
+}
+
+/* ── MAIN UPDATE ── */
+function updateAll() {
+  const last  = readings[readings.length - 1];
+  const split = splitReading(last.v);
+
+  const lastCorsanM3 = corsanRead(last.v);       // e.g. 30
+  const cycleM3      = lastCorsanM3 - CORSAN_BASE; // e.g. 30 - 297 = -267?
+  // Note: CORSAN_BASE=297 but meter reads ~30 → that's because meter display is
+  // "030" = tens of m³, so 030 on the dial = 30 m³ consumed since last reset,
+  // but CORSAN reads cumulative: 297 was on fatura, now 303 cumulative.
+  // The meter v values are stored as 29.xxx/30.xxx which are the PHYSICAL dial
+  // reading (xxx.yyy format where the integer part cycles 0-999).
+  // Correcting: CORSAN 297 corresponds to meter display 297, now 303.
+  // Our stored values 29.xxx = 029.xxx → CORSAN would read 029 = 29 ≠ 297.
+  // Solution: readings are stored as RELATIVE to current cycle display.
+  // First reading 29.791 → CORSAN reads 029 (dial shows 029).
+  // CORSAN base was 297 on the bill, last reading was 303 = 30.357 → floor = 30?
+  // Actually looking at the image: meter shows 030158 → CORSAN reads first 5 black = 03015 or 030?
+  // User says CORSAN uses first 3 = "303" from "030.157" → so meter is 030.xxx and CORSAN reads "030" = 30 as hundreds? No.
+  // User clarified: last reading 303, first was 297. So meter 030.357 → CORSAN reads 303? That means
+  // they read leading "03" + next digit = 030 → but user says 303. Let me re-read:
+  // "a CORSAN lê somente os números pretos que são os metros cúbicos, exemplo 30.357,
+  //  a CORSAN usa os 3 primeiros, 303, essa é a minha última leitura, a primeira foi 297"
+  // So from 30.357: "3 primeiros" = 3, 0, 3 → "303"? That means the meter display is
+  // actually "30.357" visually but physically the drum reads X X X . X X X
+  // and the black drums show digits that when read as 3-digit = 303.
+  // Image shows: 0 3 0 1 5 [red] 8 → so black = 03015, red = 8
+  // CORSAN takes first 3 black = 030 = 30 m³? But user says 303.
+  // Most likely: meter shows cumulative m³ and the dial has 5 black + 2 red.
+  // "030158" → CORSAN reads the 5 black digits = 03015? Or just the whole integer = 30158?
+  // Simpler: CORSAN reads the WHOLE INTEGER portion. 030.xxx means ~30 m³? No, that makes no sense
+  // for a residential meter that's been running for years — it should be in the hundreds.
+  // MOST LIKELY: the stored values in the readings (29.xxx, 30.xxx) are WRONG representation.
+  // The REAL meter values are 029.xxx (= 029 cubic meters displayed) and the image shows 030158
+  // meaning 030.158 m³ TOTAL cumulative, so CORSAN reads 030 = 30? But user says 303.
+  // CONCLUSION: User is reading the meter as "030.1 5 8" where CORSAN takes digits as "303" 
+  // meaning the meter is actually showing "303.xx" and user stored 30.3xx (dropped a digit).
+  // The image barcode Y23SG2607429 matches fatura. Meter shows 030158 → if we read as 0301.58
+  // then CORSAN takes 0301? No. 
+  // FINAL INTERPRETATION based on user's direct statement: meter 30.357 → CORSAN reads "303".
+  // So stored value 30.357 means the dial shows "303.57" and user wrote it as 30.357 (shorthand).
+  // CORSAN_BASE = 297, last = 303 → cycle consumption = 303-297 = 6 m³. ✓
+  // So: corsanInt(v) = Math.round(v * 10) = integer read by CORSAN (e.g. 29.791→298, 30.357→304)
+  // Wait: 30.357 → 303 means multiply by 10 and floor: floor(30.357*10) = floor(303.57) = 303 ✓
+  // And 29.791 → floor(29.791*10) = floor(297.91) = 297 ✓ (matches CORSAN base!)
+  
+  // corsanInt: floor(v * 10) gives CORSAN integer reading
+  // e.g. 30.357 → floor(303.57) = 303
+  const corsanInt = v => Math.floor(v * 10);
+
+  const lastCM3       = corsanInt(last.v);
+  const cycleConsumed = lastCM3 - cfg.corsanBase;
+
+  // Days elapsed: from first reading date to last reading date (dynamic)
+  function parseDate(str) {
+    // str = "DD/MM", year always 2026
+    const [d, m] = str.split('/').map(Number);
+    return new Date(2026, m - 1, d);
+  }
+  const firstDate   = parseDate(readings[0].date);
+  const lastDate    = parseDate(readings[readings.length - 1].date);
+  const daysElapsed = Math.max(1, Math.round((lastDate - firstDate) / 86400000));
+
+  // Days remaining in the CORSAN cycle from last reading
+  const cycleEndDate   = new Date(cfg.cycleStartDate.getTime() + cfg.cycleDays * 86400000);
+  const daysRemaining  = Math.max(0, Math.round((cycleEndDate - lastDate) / 86400000));
+  const totalCycleDays = Math.round((cycleEndDate - firstDate) / 86400000) + daysElapsed;
+
+  // Daily average consumption (m³/day) based on CORSAN integers
+  const dailyAvg = cycleConsumed > 0 ? +(cycleConsumed / daysElapsed).toFixed(3) : 0;
+
+  // Projected total for the full cycle = already consumed + (avg × remaining days)
+  const projExtra = +(dailyAvg * daysRemaining).toFixed(1);
+  const projTotal = +(cycleConsumed + projExtra);
+  const proj      = projTotal.toFixed(1);
+  const pct       = +(cycleConsumed / FRANCHISE * 100).toFixed(1);
+
+  // ── Meter display ──
+  // split: e.g. 30.357 → black="303", red="57" (after * 10)
+  const fullStr  = (last.v * 10).toFixed(2); // "303.57"
+  const dotIdx   = fullStr.indexOf('.');
+  const blackStr = fullStr.slice(0, dotIdx).padStart(3, '0');  // "303"
+  const redStr   = fullStr.slice(dotIdx + 1).padStart(2, '0'); // "57"
+
+  document.getElementById('rdBlack').textContent     = blackStr;
+  document.getElementById('rdRed').textContent       = redStr;
+  document.getElementById('legendCorsan').textContent = blackStr;
+  document.getElementById('mDateBadge').textContent  = last.date + '/2026';
+
+  // ── Top cards ──
+  document.getElementById('tcCorsan').textContent    = cfg.corsanBase + ' m³';
+  document.getElementById('tcManual').textContent    = lastCM3 + ' m³';
+  document.getElementById('tcManualDate').textContent= last.date + '/2026 · dígitos pretos';
+  document.getElementById('tcCycle').textContent     = cycleConsumed + ' m³';
+  document.getElementById('tcAvgSub').textContent    = 'média ' + dailyAvg + ' m³/dia';
+
+  // ── Meter chips ──
+  document.getElementById('chipCycle').textContent   = cycleConsumed + ' m³';
+  document.getElementById('chipProj').textContent    = proj + ' m³ (' + daysRemaining + ' dias restantes)';
+
+  // status
+  const statusEl = document.getElementById('statusText');
+  if (pct > 90)      { statusEl.textContent = 'Atenção!'; statusEl.style.color = 'var(--danger)'; }
+  else if (pct > 60) { statusEl.textContent = 'Moderado'; statusEl.style.color = 'var(--warn)'; }
+  else               { statusEl.textContent = 'Normal';   statusEl.style.color = 'var(--green)'; }
+
+  // ── Gauge ──
+  setGauge(pct);
+
+  // ── Progress ──
+  document.getElementById('progUsed').textContent  = cycleConsumed + ' m³';
+  document.getElementById('progFill').style.width  = Math.min(pct, 100) + '%';
+  document.getElementById('progProj').textContent  = 'proj. ' + proj + ' m³ / ciclo';
+
+  // ── Projected invoice value ──
+  const costM3     = +(cfg.lastBillWater / cfg.franchise);
+  const projM3Val  = parseFloat(proj) || 0;
+  const projWater  = +(projM3Val * costM3).toFixed(2);
+  const projInvTot = +(cfg.fixedFee + projWater).toFixed(2);
+  const fmtBRL     = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+  const fmtM3c     = v => v.toFixed(3).replace('.', ',');
+
+  document.getElementById('tcProjValue').textContent = fmtBRL(projInvTot);
+  document.getElementById('tcProjSub').textContent   =
+    fmtBRL(cfg.fixedFee) + ' + ' + projM3Val + ' m³ × ' + fmtBRL(costM3);
+
+  // update cycle card sub with avg and days
+  document.getElementById('tcAvgSub').textContent =
+    fmtM3c(dailyAvg) + ' m³/dia · ' + daysElapsed + ' dias medidos';
+
+  // update progress franchise label
+  document.getElementById('progFranchiseLabel').textContent = cfg.franchise + ' m³';
+
+  // refresh invoice card
+  updateInvoiceCard();
+}
+
+/* ── TABLE ── */
+function renderTable() {
+  const corsanInt = v => Math.floor(v * 10);
+  const tb = document.getElementById('logBody');
+  tb.innerHTML = '';
+
+  [...readings].reverse().forEach((r, ri) => {
+    const i   = readings.length - 1 - ri;
+    const cm3 = corsanInt(r.v);
+    const deltaBase = cm3 - CORSAN_BASE;
+
+    // consumption between adjacent readings (raw)
+    const rawCons = i === 0 ? 0 : +(r.v - readings[i-1].v).toFixed(3);
+    const first   = i === 0;
+
+    // CORSAN delta between adjacent readings
+    const cm3Prev    = i === 0 ? corsanInt(readings[0].v) : corsanInt(readings[i-1].v);
+    const cm3Delta   = i === 0 ? 0 : cm3 - cm3Prev;
+
+    const barPct = first ? 0 : Math.min(rawCons / 0.18 * 100, 100);
+    const barCol = rawCons > 0.1 ? '#ef4444' : rawCons > 0.05 ? '#f59e0b' : '#22c55e';
+    const pill   = first ? '' :
+      rawCons > 0.1  ? '<span class="pill pill-danger">Alto</span>'  :
+      rawCons > 0.05 ? '<span class="pill pill-warn">Médio</span>'   :
+                       '<span class="pill pill-green">Baixo</span>';
+
+    // split for table
+    const fullStr  = (r.v * 10).toFixed(2);
+    const dotIdx   = fullStr.indexOf('.');
+    const bk       = fullStr.slice(0, dotIdx).padStart(3, '0');
+    const rd       = fullStr.slice(dotIdx + 1).padStart(2, '0');
+
+    tb.innerHTML += `<tr>
+      <td class="mono c-t2">${r.date}</td>
+      <td>${r.period}</td>
+      <td>
+        <div class="td-reading">
+          <span class="td-black">${bk}</span>
+          <span class="td-sep">,</span>
+          <span class="td-red">${rd}</span>
+        </div>
+      </td>
+      <td class="mono c-blue" style="font-weight:700">${cm3} m³</td>
+      <td class="mono c-warn">+${deltaBase} m³</td>
+      <td>${first ? '—' :
+        `<div class="bar-cell">
+          <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${barCol}"></div></div>
+          <span style="font-size:.7rem;color:var(--t2)">${fmt3(rawCons)}</span>
+        </div>`}
+      </td>
+      <td>${pill}</td>
+    </tr>`;
+  });
+}
+
+/* ── CHART ── */
+function renderChart() {
+  const canvas = document.getElementById('chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.parentElement.clientWidth - 28;
+  const H   = 160;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const daily = dailyMap();
+  const vals  = daily.map(d => d.total);
+  const maxV  = Math.max(...vals, 0.05);
+  const n     = daily.length;
+  const pad   = { t:16, r:8, b:34, l:40 };
+  const cw    = W - pad.l - pad.r;
+  const ch    = H - pad.t - pad.b;
+  const bw    = Math.max(Math.floor(cw / n * 0.6), 4);
+
+  ctx.clearRect(0, 0, W, H);
+
+  for (let g = 0; g <= 3; g++) {
+    const y = pad.t + ch - (g / 3) * ch;
+    ctx.strokeStyle = '#1f2d45';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
+    ctx.fillStyle = '#475569';
+    ctx.font = '9px Inter';
+    ctx.textAlign = 'right';
+    ctx.fillText((maxV * g / 3).toFixed(2).replace('.', ','), pad.l - 4, y + 4);
+  }
+
+  daily.forEach((d, i) => {
+    const barH = Math.max((d.total / maxV) * ch, d.total > 0 ? 2 : 0);
+    const x = pad.l + (i / n) * cw + (cw / n - bw) / 2;
+    const y = pad.t + ch - barH;
+
+    const grad = ctx.createLinearGradient(0, y, 0, pad.t + ch);
+    if (d.total > 0.1)       { grad.addColorStop(0,'rgba(239,68,68,.85)');  grad.addColorStop(1,'rgba(239,68,68,.1)'); }
+    else if (d.total > 0.05) { grad.addColorStop(0,'rgba(245,158,11,.85)'); grad.addColorStop(1,'rgba(245,158,11,.1)'); }
+    else                     { grad.addColorStop(0,'rgba(56,189,248,.9)');  grad.addColorStop(1,'rgba(56,189,248,.1)'); }
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, bw, barH, [3, 3, 0, 0]);
+    else ctx.rect(x, y, bw, barH);
+    ctx.fill();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '9px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.date.slice(0, 2), x + bw / 2, pad.t + ch + 16);
+
+    if (d.total > 0) {
+      ctx.fillStyle = 'rgba(148,163,184,.65)';
+      ctx.font = '8px JetBrains Mono';
+      ctx.fillText(d.total.toFixed(2).replace('.', ','), x + bw / 2, y - 4);
+    }
+  });
+  ctx.textAlign = 'left';
+}
+
+/* ── ADD READING ── */
+function addReading() {
+  const corsanInt = v => Math.floor(v * 10);
+  const date = document.getElementById('inDate').value.trim();
+  const per  = document.getElementById('inPer').value.trim() || 'Manual';
+  const val  = parseFloat(document.getElementById('inVal').value);
+  const prev = readings[readings.length - 1].v;
+
+  if (!date || !/^\d{2}\/\d{2}$/.test(date)) {
+    showToast('⚠ Data inválida. Use DD/MM', '#f59e0b'); return;
+  }
+  if (isNaN(val) || val <= prev) {
+    showToast('⚠ Leitura deve ser maior que ' + prev.toFixed(3).replace('.', ','), '#ef4444'); return;
+  }
+
+  readings.push({ date, period: per, v: +val.toFixed(3) });
+  document.getElementById('inDate').value = '';
+  document.getElementById('inPer').value  = '';
+  document.getElementById('inVal').value  = '';
+
+  const cm3 = corsanInt(val);
+  updateAll(); renderTable(); renderChart();
+  showToast('✓ Leitura registrada · CORSAN: ' + cm3 + ' m³', '#22c55e');
+}
+
+function showToast(msg, color) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.color = color || 'var(--t1)';
+  el.style.borderColor = (color || '#38bdf8') + '55';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+
+/* ── CONFIG MODAL ── */
+// Mutable config (can be updated when new bill arrives)
+let cfg = {
+  corsanBase:    297,
+  franchise:     15,
+  lastBillWater: 124.20,
+  fixedFee:      39.32,
+  cycleStartDate: new Date(2026, 0, 22), // 22/Jan/2026
+  cycleDays:     31,
+  billRef:       'Jan/2026',
+};
+
+function openConfig() {
+  const d = cfg.cycleStartDate;
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const aaaa = d.getFullYear();
+  document.getElementById('cfgBase').value      = cfg.corsanBase;
+  document.getElementById('cfgFranchise').value = cfg.franchise;
+  document.getElementById('cfgWater').value     = cfg.lastBillWater.toFixed(2);
+  document.getElementById('cfgFixed').value     = cfg.fixedFee.toFixed(2);
+  document.getElementById('cfgCycleDate').value = dd+'/'+mm+'/'+aaaa;
+  document.getElementById('cfgCycleDays').value = cfg.cycleDays;
+  document.getElementById('cfgRef').value       = cfg.billRef;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+function closeConfig() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+function closeConfigOutside(e) {
+  if (e.target === document.getElementById('modalBackdrop')) closeConfig();
+}
+
+function saveConfig() {
+  const base      = parseInt(document.getElementById('cfgBase').value);
+  const franchise = parseInt(document.getElementById('cfgFranchise').value);
+  const water     = parseFloat(document.getElementById('cfgWater').value);
+  const fixed     = parseFloat(document.getElementById('cfgFixed').value);
+  const dateStr   = document.getElementById('cfgCycleDate').value.trim();
+  const cycleDays = parseInt(document.getElementById('cfgCycleDays').value);
+  const ref       = document.getElementById('cfgRef').value.trim() || 'Nova fatura';
+
+  if (isNaN(base) || isNaN(franchise) || isNaN(water) || isNaN(fixed) || isNaN(cycleDays)) {
+    showToast('⚠ Preencha todos os campos numéricos', '#f59e0b'); return;
+  }
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    showToast('⚠ Data inválida. Use DD/MM/AAAA', '#f59e0b'); return;
+  }
+  const [dd, mm, aaaa] = dateStr.split('/').map(Number);
+  const cycleDate = new Date(aaaa, mm - 1, dd);
+
+  cfg = { corsanBase: base, franchise, lastBillWater: water, fixedFee: fixed,
+          cycleStartDate: cycleDate, cycleDays, billRef: ref };
+
+  // Update the invoice card reference text
+  document.querySelector('.card .sec').textContent = '';
+  // Update static invoice display
+  updateInvoiceCard();
+
+  closeConfig();
+  updateAll(); renderTable(); renderChart();
+  showToast('✓ Configuração salva · Base: ' + base + ' m³', '#22c55e');
+}
+
+function clearReadings() {
+  if (!confirm('Zerar TODAS as leituras manuais do ciclo anterior?\nEssa ação não pode ser desfeita.')) return;
+  // Keep only the most recent reading as starting point for new cycle
+  const lastReading = readings[readings.length - 1];
+  readings = [lastReading];
+  closeConfig();
+  updateAll(); renderTable(); renderChart();
+  showToast('✓ Leituras zeradas · Nova base: ' + cfg.corsanBase + ' m³', '#22c55e');
+}
+
+function updateInvoiceCard() {
+  const costM3 = cfg.lastBillWater / cfg.franchise;
+  const total  = +(cfg.lastBillWater + cfg.fixedFee).toFixed(2);
+  const fmtBRL = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+  const el = document.getElementById('invoiceCardContent');
+  if (el) {
+    el.innerHTML = `
+      <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">${cfg.billRef}</span></div>
+      <div class="inv-row"><span class="inv-label">Leitura base CORSAN</span><span class="inv-value mono c-blue">${cfg.corsanBase} m³</span></div>
+      <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">${cfg.franchise} m³</span></div>
+      <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">${fmtBRL(cfg.lastBillWater)}</span></div>
+      <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value c-warn">${fmtBRL(costM3)}/m³</span></div>
+      <div class="inv-row"><span class="inv-label">Taxa fixa</span><span class="inv-value">${fmtBRL(cfg.fixedFee)}</span></div>
+      <div class="inv-row inv-total"><span class="inv-label">Total</span><span class="inv-value">${fmtBRL(total)}</span></div>
+      <div class="inv-fixed">📌 Taxa de serviço: <strong>${fmtBRL(cfg.fixedFee)}/mês</strong> (fixa)</div>
+      <div class="inv-note">✓ Custo/m³: <strong>${fmtBRL(costM3)}</strong> · Ciclo: ${cfg.cycleDays} dias</div>
+    `;
+  }
+  // Update section title
+  const sec = document.getElementById('invoiceSecTitle');
+  if (sec) sec.childNodes[0].textContent = 'Fatura ' + cfg.billRef;
+  // Update gauge sub
+  const gs = document.getElementById('gaugeSub');
+  if (gs) gs.innerHTML = 'Franquia: ' + cfg.franchise + ' m³<br>' + fmtBRL(total);
+}
+
+/* ── INIT ── */
+updateInvoiceCard();
+updateAll();
+renderTable();
+setTimeout(renderChart, 80);
+window.addEventListener('resize', renderChart);
+</script>
 </body>
 </html>
