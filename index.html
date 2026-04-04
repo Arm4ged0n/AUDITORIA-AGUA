@@ -2,1081 +2,1116 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>HydroControl · CORSAN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dashboard · Sandro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-:root {
-  --bg:      #0b0f19;
-  --s1:      #111827;
-  --s2:      #1a2235;
-  --b1:      #1f2d45;
-  --b2:      #263347;
-  --accent:  #38bdf8;
-  --a2:      #0ea5e9;
-  --green:   #22c55e;
-  --warn:    #f59e0b;
-  --danger:  #ef4444;
-  --purple:  #a78bfa;
-  --t1:      #f1f5f9;
-  --t2:      #94a3b8;
-  --t3:      #475569;
-  --r:       14px;
-  --rs:      10px;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0f19;--s1:#111827;--s2:#1a2235;--b1:#1f2d45;--b2:#263347;
+  --accent:#38bdf8;--a2:#0ea5e9;--green:#22c55e;--warn:#f59e0b;
+  --danger:#ef4444;--purple:#a78bfa;--orange:#fb923c;
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#475569;
+  --r:12px;--rs:8px;
 }
-html { font-size:15px; -webkit-text-size-adjust:100%; }
-body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--t1); min-height:100vh; line-height:1.5; }
-.app { max-width:960px; margin:0 auto; padding:14px 13px 80px; }
+html{font-size:15px;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;line-height:1.5;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.app{max-width:960px;margin:0 auto;padding:10px 10px 80px}
 
 /* ── TOPBAR ── */
-.topbar {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 0 16px; border-bottom:1px solid var(--b1); margin-bottom:16px; gap:10px;
-}
-.brand { display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.brand-icon {
-  width:38px; height:38px; background:linear-gradient(135deg,#0369a1,#38bdf8);
-  border-radius:10px; display:grid; place-items:center; font-size:18px;
-}
-.brand-name { font-weight:700; font-size:1rem; letter-spacing:-.3px; }
-.brand-sub  { font-size:.62rem; color:var(--t3); letter-spacing:.5px; }
-.topbar-meta { text-align:right; font-size:.68rem; color:var(--t3); line-height:1.8; }
-.topbar-meta strong { color:var(--accent); font-family:'JetBrains Mono',monospace; font-weight:500; }
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--b1);margin-bottom:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0369a1,#38bdf8);border-radius:9px;display:grid;place-items:center;font-size:17px;flex-shrink:0}
+.brand-name{font-weight:700;font-size:.95rem;letter-spacing:-.3px}
+.brand-sub{font-size:.6rem;color:var(--t3)}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.meta-text{text-align:right;font-size:.65rem;color:var(--t3);line-height:1.7}
+@media(max-width:400px){.meta-text{display:none}}
+.meta-text strong{color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:500}
+.cfg-btn{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:5px 11px;color:var(--t2);font-size:.7rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap}
+.cfg-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ── TOP CARDS ROW ── */
-.top-cards {
-  display:grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap:10px;
-  margin-bottom:12px;
-}
-@media(min-width:540px){ .top-cards { grid-template-columns: repeat(3, 1fr); } }
-@media(min-width:820px){ .top-cards { grid-template-columns: repeat(5, 1fr); } }
+/* ── TABS ── */
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:7px 16px;border-radius:8px;border:1px solid var(--b2);background:var(--s2);color:var(--t3);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#0b0f19}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
-.tc {
-  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
-  padding:15px 14px 13px; display:flex; flex-direction:column; gap:4px;
-  position:relative; overflow:hidden;
-}
-.tc::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  border-radius:var(--r) var(--r) 0 0;
-}
-.tc.blue::before   { background:linear-gradient(90deg,#075985,var(--accent)); }
-.tc.green::before  { background:linear-gradient(90deg,#14532d,var(--green)); }
-.tc.warn::before   { background:linear-gradient(90deg,#78350f,var(--warn)); }
-.tc.purple::before { background:linear-gradient(90deg,#4c1d95,var(--purple)); }
-.tc.danger::before { background:linear-gradient(90deg,#7f1d1d,var(--danger)); }
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 13px}
 
-.tc-label { font-size:.6rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--t3); font-weight:600; }
-.tc-value { font-family:'JetBrains Mono',monospace; font-size:1.3rem; font-weight:700; line-height:1.1; margin-top:2px; }
-.tc-sub   { font-size:.62rem; color:var(--t3); margin-top:2px; }
-.tc-badge {
-  position:absolute; top:14px; right:12px;
-  font-size:.6rem; font-weight:700; padding:2px 7px;
-  border-radius:99px;
-}
-.badge-blue   { background:rgba(56,189,248,.12); color:var(--accent); }
-.badge-green  { background:rgba(34,197,94,.12);  color:var(--green); }
-.badge-warn   { background:rgba(245,158,11,.12); color:var(--warn); }
-.badge-purple { background:rgba(167,139,250,.12);color:var(--purple); }
-.badge-danger { background:rgba(239,68,68,.12);  color:var(--danger); }
+/* summary cards row */
+.sum-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+@media(min-width:480px){.sum-row{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:720px){.sum-row{grid-template-columns:repeat(5,1fr)}}
+.sc{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:13px 12px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+.sc.blue::before{background:linear-gradient(90deg,#075985,var(--accent))}
+.sc.green::before{background:linear-gradient(90deg,#14532d,var(--green))}
+.sc.warn::before{background:linear-gradient(90deg,#78350f,var(--warn))}
+.sc.purple::before{background:linear-gradient(90deg,#4c1d95,var(--purple))}
+.sc.danger::before{background:linear-gradient(90deg,#7f1d1d,var(--danger))}
+.sc-badge{position:absolute;top:11px;right:10px;font-size:.55rem;font-weight:700;padding:2px 6px;border-radius:99px}
+.bb{background:rgba(56,189,248,.12);color:var(--accent)}
+.bg{background:rgba(34,197,94,.12);color:var(--green)}
+.bw{background:rgba(245,158,11,.12);color:var(--warn)}
+.bp{background:rgba(167,139,250,.12);color:var(--purple)}
+.bd{background:rgba(239,68,68,.12);color:var(--danger)}
+.sc-label{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-weight:600;margin-bottom:3px}
+.sc-val{font-family:'JetBrains Mono',monospace;font-size:clamp(.9rem,3.5vw,1.1rem);font-weight:700;line-height:1.1;margin-top:2px}
+.sc-sub{font-size:.6rem;color:var(--t3);margin-top:2px;line-height:1.4}
 
-/* ── METER + GAUGE CARD ── */
-.meter-card {
-  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
-  padding:18px; margin-bottom:12px;
-}
-.meter-header {
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;
-}
-.meter-title { font-size:.65rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--t3); font-weight:600; }
-.meter-badges { display:flex; gap:7px; flex-wrap:wrap; }
-.mbadge {
-  background:var(--s2); border:1px solid var(--b2); border-radius:6px;
-  padding:3px 9px; font-size:.66rem; color:var(--t2); font-family:'JetBrains Mono',monospace;
-}
-.mbadge.active { border-color:rgba(56,189,248,.3); color:var(--accent); }
+/* ── METER CARD ── */
+.meter-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 13px;margin-bottom:10px}
+.mc-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mc-title{font-size:.62rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);font-weight:600}
+.mc-badges{display:flex;gap:6px;flex-wrap:wrap}
+.mbadge{background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:2px 8px;font-size:.63rem;color:var(--t2);font-family:'JetBrains Mono',monospace}
+.mbadge.hi{border-color:rgba(56,189,248,.35);color:var(--accent)}
+.mc-body{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+@media(max-width:380px){.gauge-wrap{width:72px;height:72px}}
+.mc-left{flex:1;min-width:min(200px,100%)}
+.reading-display{display:flex;align-items:baseline;gap:1px;flex-wrap:wrap}
+.rd-black{font-family:'JetBrains Mono',monospace;font-size:clamp(1.8rem,9vw,3.2rem);font-weight:700;color:var(--t1);letter-spacing:-2px;line-height:1;text-shadow:0 0 30px rgba(56,189,248,.18)}
+.rd-dot{font-family:'JetBrains Mono',monospace;font-size:clamp(1.3rem,5vw,2rem);color:var(--t3)}
+.rd-red{font-family:'JetBrains Mono',monospace;font-size:clamp(1.1rem,4vw,1.7rem);font-weight:600;color:#f87171;letter-spacing:-1px;line-height:1}
+.rd-unit{font-size:.72rem;color:var(--t3);margin-left:7px;align-self:flex-end;padding-bottom:3px}
+.rd-legend{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.rl-item{display:flex;align-items:center;gap:5px;font-size:.62rem;color:var(--t3)}
+.rl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mc-chips{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.chip-label{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:1px}
+.chip-val{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:600}
 
-.meter-body { display:grid; grid-template-columns:1fr auto; align-items:center; gap:14px; }
-
-/* Reading display — shows black digits vs red decimals */
-.reading-display {
-  display:flex; align-items:baseline; gap:0; flex-wrap:wrap;
-}
-.reading-black {
-  font-family:'JetBrains Mono',monospace;
-  font-size:clamp(2.4rem,9vw,3.6rem);
-  font-weight:700; color:var(--t1); letter-spacing:-2px; line-height:1;
-}
-.reading-dot {
-  font-family:'JetBrains Mono',monospace;
-  font-size:clamp(1.6rem,5vw,2.2rem);
-  font-weight:400; color:var(--t3); margin:0 1px;
-}
-.reading-red {
-  font-family:'JetBrains Mono',monospace;
-  font-size:clamp(1.4rem,4vw,2rem);
-  font-weight:600; color:#f87171; letter-spacing:-1px; line-height:1;
-}
-.reading-unit { font-size:.75rem; color:var(--t3); margin-left:8px; align-self:flex-end; padding-bottom:4px; }
-
-.reading-legend {
-  display:flex; gap:14px; margin-top:10px; flex-wrap:wrap;
-}
-.legend-item { display:flex; align-items:center; gap:6px; font-size:.65rem; color:var(--t3); }
-.legend-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-
-.meter-chips { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; }
-.chip-label  { font-size:.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3); margin-bottom:2px; }
-.chip-val    { font-family:'JetBrains Mono',monospace; font-size:.88rem; font-weight:600; }
-
-/* Gauge */
-.gauge-wrap { position:relative; width:90px; height:90px; flex-shrink:0; }
-.gauge-svg  { transform:rotate(-90deg); display:block; }
-.gauge-track { fill:none; stroke:var(--b2); stroke-width:9; }
-.gauge-fill  {
-  fill:none; stroke:url(#gGrad); stroke-width:9; stroke-linecap:round;
-  stroke-dasharray:226; stroke-dashoffset:226;
-  transition:stroke-dashoffset 1.3s cubic-bezier(.34,1.56,.64,1);
-}
-.gauge-center {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-}
-.gauge-pct   { font-family:'JetBrains Mono',monospace; font-size:1.2rem; font-weight:700; color:var(--t1); line-height:1; }
-.gauge-label { font-size:.55rem; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
-.gauge-sub   { font-size:.62rem; color:var(--t3); text-align:center; line-height:1.5; margin-top:5px; }
+/* gauge */
+.gauge-wrap{position:relative;width:82px;height:82px;flex-shrink:0}
+.gauge-svg{transform:rotate(-90deg);display:block}
+.g-track{fill:none;stroke:var(--b2);stroke-width:8}
+.g-fill{fill:none;stroke:url(#gGrad);stroke-width:8;stroke-linecap:round;stroke-dasharray:201;stroke-dashoffset:201;transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1)}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-pct{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--t1);line-height:1}
+.gauge-lbl{font-size:.52rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.gauge-sub{font-size:.6rem;color:var(--t3);text-align:center;line-height:1.5;margin-top:4px}
 
 /* ── SECTION LABEL ── */
-.sec {
-  font-size:.63rem; text-transform:uppercase; letter-spacing:1.5px;
-  color:var(--t3); font-weight:600; margin-bottom:10px;
-  display:flex; align-items:center; gap:8px;
-}
-.sec::after { content:''; flex:1; height:1px; background:var(--b1); }
+.sec{font-size:.6rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.sec::after{content:'';flex:1;height:1px;background:var(--b1)}
 
-/* ── CHART ── */
-.chart-card {
-  background:var(--s1); border:1px solid var(--b1);
-  border-radius:var(--r); padding:16px 14px; margin-bottom:12px; overflow:hidden;
-}
-canvas#chart { display:block; width:100%!important; height:160px!important; }
+/* ── CHART CARD ── */
+.chart-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 13px;margin-bottom:10px;overflow:hidden}
+canvas{display:block;width:100%!important}
 
 /* ── TWO COL ── */
-.two-col { display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:12px; }
-@media(min-width:620px){ .two-col { grid-template-columns:1fr 1fr; } }
-.card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); padding:16px 14px; }
+.two-col{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+@media(min-width:600px){.two-col{grid-template-columns:1fr 1fr}}
+
+/* ── FORM ELEMENTS ── */
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+@media(max-width:360px){.fg2{grid-template-columns:1fr}}
+.fg1{margin-bottom:8px}
+.flabel{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-weight:600;margin-bottom:4px;display:block}
+input[type=text],input[type=number]{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:9px 10px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:.78rem;outline:none;width:100%;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+input:focus{border-color:var(--a2);box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+input::placeholder{color:var(--t3)}
+select{background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:9px 10px;color:var(--t1);font-family:'Inter',sans-serif;font-size:.78rem;outline:none;width:100%;-webkit-appearance:none;appearance:none}
+.btn{width:100%;background:linear-gradient(135deg,#075985,#38bdf8);border:none;border-radius:7px;padding:10px;color:#fff;font-family:'Inter',sans-serif;font-weight:600;font-size:.83rem;cursor:pointer;transition:opacity .2s,transform .1s;margin-bottom:10px;letter-spacing:.2px}
+.btn:hover{opacity:.85}
+.btn:active{transform:scale(.98)}
+.btn-sm{padding:7px 14px;border-radius:7px;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.hint{font-size:.62rem;color:var(--t3);line-height:1.7;margin-top:6px}
+
+/* ── PROGRESS ── */
+.prog-head{display:flex;justify-content:space-between;font-size:.68rem;color:var(--t2);margin-bottom:5px}
+.prog-track{height:5px;background:var(--b2);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#075985,#38bdf8);transition:width 1s ease}
+.prog-labs{display:flex;justify-content:space-between;font-size:.58rem;color:var(--t3)}
 
 /* ── INVOICE ── */
-.inv-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--b1); font-size:.8rem; }
-.inv-row:last-child { border-bottom:none; }
-.inv-label { color:var(--t2); }
-.inv-value { font-family:'JetBrains Mono',monospace; color:var(--t1); font-weight:500; }
-.inv-total .inv-label { color:var(--t1); font-weight:700; }
-.inv-total .inv-value { color:var(--accent); font-size:.95rem; }
-.inv-note {
-  margin-top:11px; background:rgba(34,197,94,.06);
-  border:1px solid rgba(34,197,94,.15); border-radius:8px;
-  padding:9px 11px; font-size:.68rem; color:var(--green); line-height:1.7;
-}
-.inv-fixed {
-  margin-top:8px; background:rgba(167,139,250,.06);
-  border:1px solid rgba(167,139,250,.15); border-radius:8px;
-  padding:9px 11px; font-size:.68rem; color:var(--purple); line-height:1.7;
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b1);font-size:.78rem}
+.inv-row:last-child{border-bottom:none}
+.inv-label{color:var(--t2)}
+.inv-value{font-family:'JetBrains Mono',monospace;color:var(--t1);font-weight:500}
+.inv-total .inv-label{color:var(--t1);font-weight:700}
+.inv-total .inv-value{color:var(--accent);font-size:.92rem}
+.inv-box{margin-top:9px;border-radius:7px;padding:8px 10px;font-size:.65rem;line-height:1.7}
+.inv-box.purple{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);color:var(--purple)}
+.inv-box.green{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);color:var(--green)}
+.hist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
+@media(max-width:340px){.hist-grid{grid-template-columns:repeat(2,1fr)}}
+.hg-cell{background:var(--s2);border-radius:5px;padding:5px 6px;text-align:center}
+.hg-label{font-size:.55rem;color:var(--t3)}
+.hg-val{font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600}
+
+/* ── TABLE ── */
+.table-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.table-head{padding:13px 13px 9px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+table{width:100%;border-collapse:collapse;min-width:460px}
+th{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-weight:600;padding:8px 11px;text-align:left;background:var(--s2);border-bottom:1px solid var(--b1);white-space:nowrap}
+td{padding:8px 11px;font-size:.75rem;border-bottom:1px solid var(--b1);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.015)}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+.pill{display:inline-block;padding:2px 7px;border-radius:99px;font-size:.6rem;font-weight:600}
+.pg{background:rgba(34,197,94,.1);color:var(--green)}
+.pw{background:rgba(245,158,11,.1);color:var(--warn)}
+.pd{background:rgba(239,68,68,.1);color:var(--danger)}
+.bar-cell{display:flex;align-items:center;gap:5px}
+.btrack{width:48px;height:3px;background:var(--b2);border-radius:99px;overflow:hidden;flex-shrink:0}
+.bfill{height:100%;border-radius:99px}
+
+/* ── FUEL ── */
+.fuel-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+@media(min-width:520px){.fuel-grid{grid-template-columns:1fr 1fr}}
+.fuel-result{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;min-height:180px}
+.kml-val{font-family:'JetBrains Mono',monospace;font-size:clamp(2.2rem,8vw,3rem);font-weight:700;color:var(--green);line-height:1;text-shadow:0 0 28px rgba(34,197,94,.22)}
+.kml-unit{font-size:.7rem;color:var(--t3)}
+.kml-tag{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.68rem;font-weight:700;margin-top:3px}
+.ktg{background:rgba(34,197,94,.12);color:var(--green)}
+.ktw{background:rgba(245,158,11,.12);color:var(--warn)}
+.ktd{background:rgba(239,68,68,.12);color:var(--danger)}
+.fstats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+@media(min-width:480px){.fstats{grid-template-columns:repeat(3,1fr)}}
+.fstat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rs);padding:11px 10px}
+.fstat-label{font-size:.58rem;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-weight:600;margin-bottom:3px}
+.fstat-val{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600}
+
+/* ── EXPENSES ── */
+.exp-top{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+@media(min-width:560px){.exp-top{grid-template-columns:1fr 1fr}}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+@media(max-width:320px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+.cat-btn{border:1px solid var(--b2);background:var(--s2);border-radius:7px;padding:7px 4px;text-align:center;font-size:.68rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;user-select:none}
+.cat-btn.sel{border-color:var(--accent);background:rgba(56,189,248,.08);color:var(--accent)}
+.cat-btn span{display:block;font-size:1rem;margin-bottom:2px}
+.exp-cat-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1)}
+.exp-cat-row:last-child{border-bottom:none}
+.exp-cat-left{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--t2);width:100px;flex-shrink:0}
+.exp-cat-bw{flex:1;height:4px;background:var(--b2);border-radius:99px;overflow:hidden}
+.exp-cat-bf{height:100%;border-radius:99px;transition:width .5s ease}
+.exp-cat-val{font-family:'JetBrains Mono',monospace;font-size:.73rem;font-weight:600;color:var(--t1);width:80px;text-align:right;flex-shrink:0}
+.total-banner{background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.13);border-radius:9px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.tb-label{font-size:.68rem;color:var(--t2)}
+.tb-sub{font-size:.6rem;color:var(--t3);margin-top:1px}
+.tb-val{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--accent)}
+.exp-item{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--b1);transition:background .12s}
+.exp-item:last-child{border-bottom:none}
+.exp-item:hover{background:rgba(255,255,255,.015)}
+.exp-emoji{font-size:1.1rem;flex-shrink:0}
+.exp-info{flex:1;min-width:0}
+.exp-desc{font-size:.78rem;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-meta{font-size:.6rem;color:var(--t3);margin-top:1px}
+.exp-val{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:var(--danger);flex-shrink:0}
+.exp-del{background:none;border:none;color:var(--t3);font-size:.9rem;cursor:pointer;padding:2px 5px;border-radius:4px;transition:color .12s,background .12s;flex-shrink:0}
+.exp-del:hover{color:var(--danger);background:rgba(239,68,68,.1)}
+.mf-row{display:flex;gap:5px;flex-wrap:wrap}
+.mf-btn{padding:3px 9px;border-radius:5px;border:1px solid var(--b2);background:var(--s2);color:var(--t3);font-size:.65rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.mf-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(56,189,248,.07)}
+.empty{color:var(--t3);font-size:.75rem;text-align:center;padding:28px 0}
+
+/* ── COLOR HELPERS ── */
+.cb{color:var(--accent)}.cg{color:var(--green)}.cw{color:var(--warn)}.cd{color:var(--danger)}.cp{color:var(--purple)}.ct{color:var(--t2)}
+
+/* ── MODAL ── */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.open{opacity:1;pointer-events:all}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);width:100%;max-width:440px;padding:22px 18px 18px;transform:translateY(18px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:90vh;overflow-y:auto}
+.backdrop.open .modal{transform:translateY(0)}
+.modal-title{font-weight:700;font-size:.95rem;color:var(--t1);margin-bottom:3px}
+.modal-sub{font-size:.67rem;color:var(--t3);margin-bottom:18px;line-height:1.6}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:380px){.modal-row{grid-template-columns:1fr}}
+.modal-field{margin-bottom:12px}
+.btn-row{display:flex;gap:9px;margin-top:18px}
+.btn-cancel{flex:1;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:9px;color:var(--t2);font-family:'Inter',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer}
+.btn-save{flex:2;background:linear-gradient(135deg,#075985,#38bdf8);border:none;border-radius:7px;padding:9px;color:#fff;font-family:'Inter',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer}
+.btn-danger{width:100%;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:7px;padding:8px;color:var(--danger);font-family:'Inter',sans-serif;font-weight:600;font-size:.75rem;cursor:pointer;margin-top:8px}
+
+/* ── PULSE ── */
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pa 2s infinite;display:inline-block;margin-right:5px;vertical-align:middle}
+@keyframes pa{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 5px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--s2);border:1px solid var(--b2);border-radius:9px;padding:9px 18px;font-size:.75rem;color:var(--t1);z-index:400;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.5);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ════════════════════════════════════════
+   MOBILE-FIRST OVERRIDES (≤ 480px)
+════════════════════════════════════════ */
+@media(max-width:480px){
+  /* Topbar */
+  .brand-name{font-size:.88rem}
+  .cfg-label{display:none}
+
+  /* Summary cards */
+  .sc-label{font-size:.54rem}
+  .sc-val{font-size:.92rem}
+  .sc-sub{font-size:.56rem}
+  .sc-badge{font-size:.5rem;padding:1px 5px}
+
+  /* Meter card */
+  .meter-card{padding:12px 11px}
+  .rd-dot{font-size:clamp(1rem,4vw,1.5rem)}
+  .chip-label{font-size:.54rem}
+  .chip-val{font-size:.78rem}
+  .mc-chips{gap:10px}
+
+  /* Gauge */
+  .gauge-sub{font-size:.56rem}
+
+  /* Cards */
+  .card{padding:12px 11px}
+
+  /* Inputs */
+  input[type=text],input[type=number]{font-size:.75rem;padding:8px 10px}
+  .btn{font-size:.82rem;padding:9px}
+
+  /* Fuel */
+  .kml-detail{font-size:.68rem}
+  .fstat-label{font-size:.56rem}
+  .fstat-val{font-size:.88rem}
+
+  /* Expense */
+  .cat-btn{font-size:.66rem;padding:6px 3px}
+  .cat-btn .cat-emoji{font-size:1rem}
+  .exp-desc{font-size:.78rem}
+  .exp-meta{font-size:.6rem}
+  .exp-val{font-size:.82rem}
+
+  /* Invoice history */
+  .hist-grid>div{padding:4px 5px}
+
+  /* Table */
+  td,th{padding:7px 10px;font-size:.7rem}
+
+  /* Modal */
+  .modal{padding:18px 14px 14px}
+  .modal-title{font-size:.9rem}
+
+  /* Tabs */
+  .tab{padding:6px 12px;font-size:.72rem}
+
+  /* Progress */
+  .prog-labs{font-size:.56rem}
+
+  /* Total banner */
+  .total-banner{padding:10px 12px}
 }
 
-/* ── FORM ── */
-.fg2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
-.fg1 { margin-bottom:8px; }
-input[type=text], input[type=number] {
-  background:var(--s2); border:1px solid var(--b2); border-radius:8px;
-  padding:9px 11px; color:var(--t1); font-family:'JetBrains Mono',monospace;
-  font-size:.78rem; outline:none; width:100%;
-  transition:border-color .2s,box-shadow .2s;
-  -webkit-appearance:none; appearance:none;
+/* ════════════════════════════════════════
+   VERY SMALL (≤ 360px)
+════════════════════════════════════════ */
+@media(max-width:360px){
+  .app{padding:8px 8px 80px}
+  .sum-row{grid-template-columns:repeat(2,1fr);gap:6px}
+  .sc-val{font-size:.82rem}
+  .tabs{gap:4px}
+  .tab{padding:5px 10px;font-size:.68rem}
+  .rd-black{font-size:clamp(1.6rem,8vw,2.4rem)}
+  .gauge-wrap{width:68px;height:68px}
+  .gauge-pct{font-size:.95rem}
+  .fuel-grid{grid-template-columns:1fr}
 }
-input:focus { border-color:var(--a2); box-shadow:0 0 0 3px rgba(14,165,233,.1); }
-input::placeholder { color:var(--t3); }
-.btn {
-  width:100%; background:linear-gradient(135deg,#075985,#38bdf8);
-  border:none; border-radius:8px; padding:10px; color:#fff;
-  font-family:'Inter',sans-serif; font-weight:600; font-size:.85rem;
-  cursor:pointer; transition:opacity .2s,transform .1s;
-  margin-bottom:12px; letter-spacing:.2px;
-}
-.btn:hover { opacity:.85; }
-.btn:active { transform:scale(.98); }
-.form-hint { font-size:.63rem; color:var(--t3); line-height:1.7; }
 
-/* PROGRESS */
-.prog-head { display:flex; justify-content:space-between; font-size:.7rem; color:var(--t2); margin-bottom:5px; }
-.prog-track { height:6px; background:var(--b2); border-radius:99px; overflow:hidden; margin-bottom:4px; }
-.prog-fill  { height:100%; border-radius:99px; background:linear-gradient(90deg,#075985,#38bdf8); transition:width 1s ease; }
-.prog-labs  { display:flex; justify-content:space-between; font-size:.6rem; color:var(--t3); }
-
-/* TABLE */
-.table-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); margin-bottom:12px; overflow:hidden; }
-.table-head { padding:14px 14px 10px; border-bottom:1px solid var(--b1); }
-.table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-table { width:100%; border-collapse:collapse; min-width:520px; }
-th {
-  font-size:.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3);
-  font-weight:600; padding:9px 12px; text-align:left;
-  background:var(--s2); border-bottom:1px solid var(--b1); white-space:nowrap;
-}
-td { padding:9px 12px; font-size:.77rem; border-bottom:1px solid var(--b1); white-space:nowrap; vertical-align:middle; }
-tr:last-child td { border-bottom:none; }
-tbody tr:hover td { background:rgba(255,255,255,.018); }
-.mono { font-family:'JetBrains Mono',monospace; font-weight:500; }
-.pill { display:inline-block; padding:2px 8px; border-radius:99px; font-size:.63rem; font-weight:600; }
-.pill-green  { background:rgba(34,197,94,.1);  color:var(--green); }
-.pill-warn   { background:rgba(245,158,11,.1); color:var(--warn); }
-.pill-danger { background:rgba(239,68,68,.1);  color:var(--danger); }
-.bar-cell { display:flex; align-items:center; gap:5px; }
-.bar-track { width:52px; height:4px; background:var(--b2); border-radius:99px; overflow:hidden; flex-shrink:0; }
-.bar-fill  { height:100%; border-radius:99px; }
-
-/* reading in table: black digits styled */
-.td-reading { display:flex; align-items:baseline; gap:1px; }
-.td-black { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--t1); font-size:.82rem; }
-.td-sep   { font-family:'JetBrains Mono',monospace; color:var(--t3); font-size:.78rem; }
-.td-red   { font-family:'JetBrains Mono',monospace; color:#f87171; font-size:.76rem; }
-
-/* PULSE */
-.pulse { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(34,197,94,.5); animation:pa 2s infinite; display:inline-block; margin-right:5px; vertical-align:middle; }
-@keyframes pa { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
-
-/* TOAST */
-.toast {
-  position:fixed; bottom:22px; left:50%;
-  transform:translateX(-50%) translateY(80px);
-  background:var(--s2); border:1px solid var(--b2); border-radius:10px;
-  padding:10px 20px; font-size:.78rem; color:var(--t1); z-index:100;
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
-  white-space:nowrap; box-shadow:0 8px 28px rgba(0,0,0,.5);
-  pointer-events:none;
-}
-.toast.show { transform:translateX(-50%) translateY(0); }
-
-/* colors */
-.c-blue   { color:var(--accent); }
-.c-green  { color:var(--green); }
-.c-warn   { color:var(--warn); }
-.c-danger { color:var(--danger); }
-.c-purple { color:var(--purple); }
-.c-t2     { color:var(--t2); }
-
-/* ── CONFIG MODAL ── */
-.modal-backdrop {
-  position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:200;
-  display:flex; align-items:center; justify-content:center; padding:16px;
-  opacity:0; pointer-events:none; transition:opacity .2s;
-}
-.modal-backdrop.open { opacity:1; pointer-events:all; }
-.modal {
-  background:var(--s1); border:1px solid var(--b2); border-radius:var(--r);
-  width:100%; max-width:460px; padding:24px 20px 20px;
-  transform:translateY(20px); transition:transform .25s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
-.modal-backdrop.open .modal { transform:translateY(0); }
-.modal-title {
-  font-family:'Inter',sans-serif; font-weight:700; font-size:1rem;
-  color:var(--t1); margin-bottom:4px;
-}
-.modal-sub { font-size:.7rem; color:var(--t3); margin-bottom:20px; line-height:1.5; }
-.modal-field { margin-bottom:14px; }
-.modal-label { font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--t3); font-weight:600; margin-bottom:5px; display:block; }
-.modal-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.btn-row { display:flex; gap:10px; margin-top:20px; }
-.btn-cancel {
-  flex:1; background:var(--s2); border:1px solid var(--b2); border-radius:8px;
-  padding:10px; color:var(--t2); font-family:'Inter',sans-serif;
-  font-weight:600; font-size:.85rem; cursor:pointer; transition:opacity .2s;
-}
-.btn-cancel:hover { opacity:.8; }
-.btn-save {
-  flex:2; background:linear-gradient(135deg,#075985,#38bdf8); border:none;
-  border-radius:8px; padding:10px; color:#fff; font-family:'Inter',sans-serif;
-  font-weight:600; font-size:.85rem; cursor:pointer; transition:opacity .2s;
-}
-.btn-save:hover { opacity:.85; }
-.btn-clear-all {
-  width:100%; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.2);
-  border-radius:8px; padding:9px; color:var(--danger); font-family:'Inter',sans-serif;
-  font-weight:600; font-size:.8rem; cursor:pointer; transition:opacity .2s; margin-top:8px;
-}
-.btn-clear-all:hover { opacity:.8; }
-.config-btn {
-  display:flex; align-items:center; gap:6px;
-  background:var(--s2); border:1px solid var(--b2); border-radius:8px;
-  padding:5px 12px; color:var(--t2); font-size:.72rem; font-weight:600;
-  cursor:pointer; transition:border-color .2s, color .2s; flex-shrink:0;
-}
-.config-btn:hover { border-color:var(--accent); color:var(--accent); }
-
+.del-btn{background:none;border:none;color:var(--t3);font-size:.95rem;cursor:pointer;padding:3px 7px;border-radius:5px;transition:color .15s,background .15s;line-height:1}
+.del-btn:hover{color:var(--danger);background:rgba(239,68,68,.1)}
+.del-btn:active{transform:scale(.9)}
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">💧</div>
-      <div>
-        <div class="brand-name">HydroControl</div>
-        <div class="brand-sub">CORSAN · Sandro Fagundes</div>
-      </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">📊</div>
+    <div>
+      <div class="brand-name">Dashboard Pessoal</div>
+      <div class="brand-sub">Água · Combustível · Gastos</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="topbar-meta">
-        <div>Mat. <strong>2822441-8</strong></div>
-        <div>Med. <strong>Y23SG2607429</strong></div>
-      </div>
-      <button class="config-btn" onclick="openConfig()">⚙ Nova fatura</button>
+  </div>
+  <div class="topbar-right">
+    <div class="meta-text">
+      <div>Mat. <strong>2822441-8</strong></div>
+      <div>Med. <strong>Y23SG2607429</strong></div>
+    </div>
+    <button class="cfg-btn" onclick="openModal()">⚙ Nova fatura</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('agua')">💧 Água</button>
+  <button class="tab" onclick="switchTab('combustivel')">⛽ Combustível</button>
+  <button class="tab" onclick="switchTab('gastos')">💸 Gastos</button>
+</div>
+
+<!-- ══════════ ABA ÁGUA ══════════ -->
+<div class="tab-panel active" id="tab-agua">
+
+  <!-- SUMMARY CARDS -->
+  <div class="sum-row">
+    <div class="sc blue">
+      <div class="sc-badge bb">CORSAN</div>
+      <div class="sc-label">Base CORSAN</div>
+      <div class="sc-val cb" id="tcCorsan">314 m³</div>
+      <div class="sc-sub">Abr/2026 · faturado</div>
+    </div>
+    <div class="sc green">
+      <div class="sc-badge bg">MANUAL</div>
+      <div class="sc-label">Última leitura</div>
+      <div class="sc-val cg" id="tcManual">314 m³</div>
+      <div class="sc-sub" id="tcManualSub">02/04/2026</div>
+    </div>
+    <div class="sc warn">
+      <div class="sc-badge bw">CICLO</div>
+      <div class="sc-label">Consumido</div>
+      <div class="sc-val cw" id="tcCycle">0 m³</div>
+      <div class="sc-sub" id="tcCycleSub">média — m³/dia</div>
+    </div>
+    <div class="sc purple">
+      <div class="sc-badge bp">FIXO</div>
+      <div class="sc-label">Taxa de serviço</div>
+      <div class="sc-val cp" id="tcFixed">R$ 39,32</div>
+      <div class="sc-sub">cobrada todo mês</div>
+    </div>
+    <div class="sc danger">
+      <div class="sc-badge bd">PROJEÇÃO</div>
+      <div class="sc-label">Estimativa fatura</div>
+      <div class="sc-val cd" id="tcProj">R$ —</div>
+      <div class="sc-sub" id="tcProjSub">taxa + consumo projetado</div>
     </div>
   </div>
 
-  <!-- ══ TOP CARDS ══ -->
-  <div class="top-cards">
-
-    <!-- Última leitura CORSAN -->
-    <div class="tc blue">
-      <span class="tc-badge badge-blue">CORSAN</span>
-      <div class="tc-label">Última leitura CORSAN</div>
-      <div class="tc-value c-blue" id="tcCorsan">297 m³</div>
-      <div class="tc-sub">Jan/2026 · dígitos pretos</div>
-    </div>
-
-    <!-- Última leitura manual -->
-    <div class="tc green">
-      <span class="tc-badge badge-green">MANUAL</span>
-      <div class="tc-label">Minha última leitura</div>
-      <div class="tc-value c-green" id="tcManual">303 m³</div>
-      <div class="tc-sub" id="tcManualDate">13/03/2026</div>
-    </div>
-
-    <!-- Consumo do ciclo -->
-    <div class="tc warn">
-      <span class="tc-badge badge-warn">CICLO</span>
-      <div class="tc-label">Consumo desde CORSAN</div>
-      <div class="tc-value c-warn" id="tcCycle">6 m³</div>
-      <div class="tc-sub" id="tcAvgSub">média — m³/dia</div>
-    </div>
-
-    <!-- Taxa fixa -->
-    <div class="tc purple">
-      <span class="tc-badge badge-purple">FIXO</span>
-      <div class="tc-label">Taxa de serviço</div>
-      <div class="tc-value c-purple">R$ 39,32</div>
-      <div class="tc-sub">serviço básico CORSAN</div>
-    </div>
-
-    <!-- Projeção de valor -->
-    <div class="tc danger">
-      <span class="tc-badge badge-danger">PROJEÇÃO</span>
-      <div class="tc-label">Estimativa da fatura</div>
-      <div class="tc-value c-danger" id="tcProjValue">R$ —</div>
-      <div class="tc-sub" id="tcProjSub">taxa + consumo projetado</div>
-    </div>
-
-  </div>
-
-  <!-- ══ MEDIDOR VISUAL ══ -->
+  <!-- METER CARD -->
   <div class="meter-card">
-    <div class="meter-header">
-      <span class="meter-title">Medidor físico · leitura atual</span>
-      <div class="meter-badges">
+    <div class="mc-header">
+      <span class="mc-title">Medidor físico · leitura atual</span>
+      <div class="mc-badges">
         <span class="mbadge">Y23SG2607429</span>
-        <span class="mbadge active" id="mDateBadge">13/03/2026</span>
+        <span class="mbadge hi" id="mDate">02/04/2026</span>
       </div>
     </div>
-
-    <div class="meter-body">
-      <div>
-        <!-- Reading: black = CORSAN digits, red = decimal -->
+    <div class="mc-body">
+      <div class="mc-left">
         <div class="reading-display">
-          <span class="reading-black" id="rdBlack">030</span>
-          <span class="reading-dot">.</span>
-          <span class="reading-red" id="rdRed">357</span>
-          <span class="reading-unit">m³</span>
+          <span class="rd-black" id="rdBlack">314</span>
+          <span class="rd-dot">,</span>
+          <span class="rd-red" id="rdRed">00</span>
+          <span class="rd-unit">m³</span>
         </div>
-
-        <div class="reading-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--t1)"></div>
-            <span>Dígitos pretos = leitura CORSAN (<strong id="legendCorsan" style="color:var(--t1)">030</strong> m³ inteiro)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#f87171"></div>
-            <span>Dígitos vermelhos = décimos (não faturados)</span>
-          </div>
+        <div class="rd-legend">
+          <div class="rl-item"><div class="rl-dot" style="background:var(--t1)"></div><span>Dígitos pretos = m³ CORSAN (<strong id="rdLegend" style="color:var(--t1)">314</strong>)</span></div>
+          <div class="rl-item"><div class="rl-dot" style="background:#f87171"></div><span>Decimais vermelhos = não faturados</span></div>
         </div>
-
-        <div class="meter-chips">
-          <div>
-            <div class="chip-label">Leitura CORSAN base</div>
-            <div class="chip-val c-blue">297 m³</div>
-          </div>
-          <div>
-            <div class="chip-label">Consumido no ciclo</div>
-            <div class="chip-val c-warn" id="chipCycle">6 m³</div>
-          </div>
-          <div>
-            <div class="chip-label">Projeção mensal</div>
-            <div class="chip-val c-green" id="chipProj">— m³</div>
-          </div>
-          <div>
-            <div class="chip-label">Status</div>
-            <div class="chip-val" style="font-size:.8rem;padding-top:2px"><span class="pulse"></span><span id="statusText">Normal</span></div>
-          </div>
+        <div class="mc-chips">
+          <div><div class="chip-label">Base CORSAN</div><div class="chip-val cb">314 m³</div></div>
+          <div><div class="chip-label">Consumido</div><div class="chip-val cw" id="chipCycle">0 m³</div></div>
+          <div><div class="chip-label">Projeção</div><div class="chip-val cg" id="chipProj">— m³</div></div>
+          <div><div class="chip-label">Status</div><div class="chip-val" style="font-size:.75rem;padding-top:2px"><span class="pulse"></span><span id="statusTxt">Normal</span></div></div>
         </div>
       </div>
-
-      <!-- Gauge -->
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
         <div class="gauge-wrap">
-          <svg class="gauge-svg" width="90" height="90" viewBox="0 0 90 90">
+          <svg class="gauge-svg" width="82" height="82" viewBox="0 0 82 82">
             <defs>
               <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#075985"/>
                 <stop offset="100%" stop-color="#38bdf8"/>
               </linearGradient>
             </defs>
-            <circle class="gauge-track" cx="45" cy="45" r="36"/>
-            <circle class="gauge-fill" id="gaugeFill" cx="45" cy="45" r="36"/>
+            <circle class="g-track" cx="41" cy="41" r="32"/>
+            <circle class="g-fill" id="gFill" cx="41" cy="41" r="32"/>
           </svg>
           <div class="gauge-center">
-            <div class="gauge-pct" id="gaugePct">—</div>
-            <div class="gauge-label">franquia</div>
+            <div class="gauge-pct" id="gPct">0%</div>
+            <div class="gauge-lbl">franquia</div>
           </div>
         </div>
-        <div class="gauge-sub" id="gaugeSub">Franquia: 15 m³<br>R$ 163,52</div>
+        <div class="gauge-sub" id="gSub">17 m³/ciclo<br>R$ 180,08</div>
       </div>
     </div>
   </div>
 
-  <!-- ══ CHART ══ -->
+  <!-- CHART -->
   <div class="chart-card">
-    <div class="sec">Consumo diário — dígitos pretos (m³ inteiros)</div>
-    <canvas id="chart"></canvas>
+    <div class="sec">Consumo diário (m³)</div>
+    <canvas id="waterChart" height="150"></canvas>
   </div>
 
-  <!-- ══ TWO COL ══ -->
+  <!-- FORM + INVOICE -->
   <div class="two-col">
-
-    <!-- FORM -->
     <div class="card">
-      <div class="sec">Registrar nova leitura</div>
-
+      <div class="sec">Nova leitura</div>
       <div class="fg2">
-        <input type="text"   id="inDate" placeholder="Data  DD/MM" maxlength="5">
-        <input type="text"   id="inPer"  placeholder="Período (manhã…)" maxlength="20">
+        <div><label class="flabel">Data</label><input type="text" id="wDate" placeholder="DD/MM" maxlength="5"></div>
+        <div><label class="flabel">Período</label><input type="text" id="wPer" placeholder="manhã, tarde…" maxlength="20"></div>
       </div>
-      <div class="fg1">
-        <input type="number" id="inVal"  placeholder="Leitura completa ex: 030.420" step="0.001">
-      </div>
+      <div class="fg1"><label class="flabel">Leitura completa do medidor</label><input type="number" id="wVal" placeholder="ex: 031.540" step="0.001"></div>
       <button class="btn" onclick="addReading()">＋ Registrar leitura</button>
 
       <div class="sec" style="margin-bottom:8px">Projeção do ciclo</div>
       <div class="prog-head">
-        <span>Consumido: <strong class="c-warn" id="progUsed">—</strong></span>
-        <span>Franquia: <span id="progFranchiseLabel">15 m³</span></span>
+        <span>Consumido: <strong class="cw" id="progUsed">0 m³</strong></span>
+        <span>Franquia: <span id="progFranq">17 m³</span></span>
       </div>
       <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-      <div class="prog-labs">
-        <span>0 m³</span>
-        <span class="c-blue" id="progProj">proj. — m³</span>
-        <span>15 m³</span>
-      </div>
-
-      <div class="form-hint" style="margin-top:12px">
-        💡 <strong style="color:var(--t2)">Como ler o medidor:</strong><br>
-        Digite o valor completo ex: <strong style="color:var(--t1)">030.420</strong><br>
-        A CORSAN fatura apenas os dígitos pretos: <strong style="color:var(--t1)">030</strong> = 30 m³<br>
-        Os dígitos vermelhos (.420) não são faturados.
-      </div>
+      <div class="prog-labs"><span>0</span><span class="cb" id="progProj">proj. — m³</span><span id="progMax">17 m³</span></div>
+      <div class="hint">💡 Digite o valor completo ex: <strong style="color:var(--t1)">031.540</strong><br>CORSAN lê os dígitos pretos: <strong style="color:var(--t1)">031</strong> · Decimais não são faturados.</div>
     </div>
 
-    <!-- INVOICE -->
     <div class="card">
-      <div class="sec" id="invoiceSecTitle">Fatura Jan/2026</div>
-      <div id="invoiceCardContent">
-        <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">Jan/2026</span></div>
-        <div class="inv-row"><span class="inv-label">Leitura base</span><span class="inv-value mono c-blue">297 m³</span></div>
-        <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">15 m³</span></div>
-        <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">R$ 124,20</span></div>
-        <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value c-warn">R$ 8,28/m³</span></div>
+      <div class="sec" id="invTitle">Fatura Abr/2026</div>
+      <div id="invContent">
+        <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">Abr/2026</span></div>
+        <div class="inv-row"><span class="inv-label">Leitura anterior</span><span class="inv-value mono ct">297 m³</span></div>
+        <div class="inv-row"><span class="inv-label">Leitura base atual</span><span class="inv-value mono cb">314 m³</span></div>
+        <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">17 m³</span></div>
+        <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">R$ 140,76</span></div>
+        <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value cw">R$ 8,28/m³</span></div>
         <div class="inv-row"><span class="inv-label">Taxa fixa</span><span class="inv-value">R$ 39,32</span></div>
-        <div class="inv-row inv-total"><span class="inv-label">Total</span><span class="inv-value">R$ 163,52</span></div>
-        <div class="inv-fixed">📌 Taxa de serviço: <strong>R$ 39,32/mês</strong> (fixa)</div>
-        <div class="inv-note">✓ Custo por m³: <strong>R$ 8,28</strong> · Ciclo: 31 dias</div>
+        <div class="inv-row inv-total"><span class="inv-label">Total pago</span><span class="inv-value">R$ 180,08</span></div>
+        <div class="inv-box purple">📌 Taxa de serviço: <strong>R$ 39,32/mês</strong> (fixa)</div>
+        <div class="inv-box green">✓ Custo/m³: <strong>R$ 8,28</strong> · Venc. 15/04/2026 · 30 dias</div>
+        <div style="font-size:.58rem;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:10px 0 5px">Histórico CORSAN (m³)</div>
+        <div class="hist-grid">
+          <div class="hg-cell"><div class="hg-label">Abr/26</div><div class="hg-val cb">17</div></div>
+          <div class="hg-cell"><div class="hg-label">Mar/26</div><div class="hg-val ct">15</div></div>
+          <div class="hg-cell"><div class="hg-label">Fev/26</div><div class="hg-val cw">22</div></div>
+          <div class="hg-cell"><div class="hg-label">Jan/26</div><div class="hg-val cw">27</div></div>
+          <div class="hg-cell"><div class="hg-label">Dez/25</div><div class="hg-val cw">22</div></div>
+          <div class="hg-cell"><div class="hg-label">Nov/25</div><div class="hg-val cd">33</div></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ══ TABLE ══ -->
+  <!-- READINGS TABLE -->
   <div class="table-card">
     <div class="table-head">
-      <div class="sec" style="margin-bottom:0">Histórico de leituras manuais</div>
+      <div class="sec" style="margin-bottom:0;flex:1">Histórico de leituras</div>
     </div>
     <div class="table-scroll">
       <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Período</th>
-            <th>Leitura completa</th>
-            <th>M³ CORSAN</th>
-            <th>Δ desde base (297)</th>
-            <th>Cons. entre leit.</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="logBody"></tbody>
+        <thead><tr>
+          <th>Data</th><th>Período</th><th>Leitura</th>
+          <th>m³ CORSAN</th><th>Δ base</th><th>Consumo</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody id="waterBody"></tbody>
       </table>
     </div>
   </div>
 
-</div>
-<!-- ══ CONFIG MODAL ══ -->
-<div class="modal-backdrop" id="modalBackdrop" onclick="closeConfigOutside(event)">
+</div><!-- /tab-agua -->
+
+<!-- ══════════ ABA COMBUSTÍVEL ══════════ -->
+<div class="tab-panel" id="tab-combustivel">
+
+  <div class="fuel-grid">
+    <div class="card">
+      <div class="sec">Novo abastecimento</div>
+      <div class="fg2">
+        <div><label class="flabel">Data</label><input type="text" id="fDate" placeholder="DD/MM" maxlength="5"></div>
+        <div><label class="flabel">Preço/litro (R$)</label><input type="number" id="fPrice" placeholder="6.49" step="0.01"></div>
+      </div>
+      <div class="fg2">
+        <div><label class="flabel">KM (odômetro)</label><input type="number" id="fKm" placeholder="ex: 45230"></div>
+        <div><label class="flabel">Litros abastecidos</label><input type="number" id="fLitros" placeholder="ex: 40.50" step="0.01"></div>
+      </div>
+      <button class="btn" onclick="addFuel()">⛽ Registrar abastecimento</button>
+      <div class="hint">KM/L calculado automaticamente a partir do 2º abastecimento.<br>O gasto é lançado automaticamente na aba Gastos.</div>
+    </div>
+
+    <div class="card fuel-result">
+      <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);font-weight:600">Último KM/L</div>
+      <div class="kml-val" id="kmlVal">—</div>
+      <div class="kml-unit">km por litro</div>
+      <div class="kml-tag" id="kmlTag" style="display:none"></div>
+      <div style="font-size:.68rem;color:var(--t3);line-height:1.8;margin-top:10px" id="kmlDetail">Registre ao menos 2 abastecimentos.</div>
+    </div>
+  </div>
+
+  <div class="fstats">
+    <div class="fstat"><div class="fstat-label">Média KM/L</div><div class="fstat-val cg" id="fAvg">—</div></div>
+    <div class="fstat"><div class="fstat-label">Total gasto</div><div class="fstat-val cd" id="fSpent">—</div></div>
+    <div class="fstat"><div class="fstat-label">Total litros</div><div class="fstat-val cb" id="fLit">—</div></div>
+    <div class="fstat"><div class="fstat-label">KM rodados</div><div class="fstat-val cw" id="fKmTot">—</div></div>
+    <div class="fstat"><div class="fstat-label">Custo/KM</div><div class="fstat-val cp" id="fCKm">—</div></div>
+    <div class="fstat"><div class="fstat-label">Abastecimentos</div><div class="fstat-val ct" id="fCnt">0</div></div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head"><div class="sec" style="margin-bottom:0;flex:1">Histórico de abastecimentos</div></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>KM</th><th>Litros</th><th>R$/L</th><th>Total R$</th><th>KM rodados</th><th>KM/L</th><th></th>
+        </tr></thead>
+        <tbody id="fuelBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /tab-combustivel -->
+
+<!-- ══════════ ABA GASTOS ══════════ -->
+<div class="tab-panel" id="tab-gastos">
+
+  <div class="exp-top">
+    <div class="card">
+      <div class="sec">Novo lançamento</div>
+      <div class="cat-grid" id="catGrid">
+        <div class="cat-btn sel" data-cat="Combustível" onclick="selCat(this)"><span>⛽</span>Combustível</div>
+        <div class="cat-btn" data-cat="Alimentação"  onclick="selCat(this)"><span>🍔</span>Alimentação</div>
+        <div class="cat-btn" data-cat="Contas fixas" onclick="selCat(this)"><span>📋</span>Contas fixas</div>
+        <div class="cat-btn" data-cat="Saúde"        onclick="selCat(this)"><span>💊</span>Saúde</div>
+        <div class="cat-btn" data-cat="Lazer"        onclick="selCat(this)"><span>🎮</span>Lazer</div>
+        <div class="cat-btn" data-cat="Outros"       onclick="selCat(this)"><span>📦</span>Outros</div>
+      </div>
+      <div class="fg2">
+        <div><label class="flabel">Data</label><input type="text" id="eDate" placeholder="DD/MM" maxlength="5"></div>
+        <div><label class="flabel">Valor (R$)</label><input type="number" id="eVal" placeholder="0,00" step="0.01"></div>
+      </div>
+      <div class="fg1"><input type="text" id="eDesc" placeholder="Descrição (ex: Supermercado Extra)" maxlength="40"></div>
+      <button class="btn" onclick="addExp()">＋ Adicionar gasto</button>
+    </div>
+
+    <div class="card">
+      <div class="sec">Por categoria</div>
+      <div id="catSummary"><div class="empty">Nenhum gasto registrado.</div></div>
+    </div>
+  </div>
+
+  <div class="total-banner">
+    <div>
+      <div class="tb-label">Total do período</div>
+      <div class="tb-sub" id="expPeriodLbl">Todos os meses</div>
+    </div>
+    <div class="tb-val" id="expTotal">R$ 0,00</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="sec">Gastos por categoria</div>
+    <canvas id="expChart" height="170"></canvas>
+  </div>
+
+  <div class="table-card">
+    <div class="table-head">
+      <div class="sec" style="margin-bottom:0;flex:1">Lançamentos</div>
+      <div class="mf-row" id="monthFilter"></div>
+    </div>
+    <div id="expList"><div class="empty">Nenhum lançamento.</div></div>
+  </div>
+
+</div><!-- /tab-gastos -->
+
+</div><!-- /app -->
+
+<!-- MODAL NOVA FATURA -->
+<div class="backdrop" id="backdrop" onclick="closeModalOut(event)">
   <div class="modal">
     <div class="modal-title">⚙ Atualizar dados da fatura</div>
-    <div class="modal-sub">
-      Use quando chegar a nova fatura da CORSAN.<br>
-      Atualize a leitura base, valor e reinicie o ciclo.
-    </div>
-
+    <div class="modal-sub">Use quando chegar a nova fatura CORSAN. Todos os cálculos se atualizam automaticamente.</div>
     <div class="modal-row">
-      <div class="modal-field">
-        <label class="modal-label">Leitura base CORSAN (m³)</label>
-        <input type="number" id="cfgBase" placeholder="ex: 312">
-      </div>
-      <div class="modal-field">
-        <label class="modal-label">Consumo faturado (m³)</label>
-        <input type="number" id="cfgFranchise" placeholder="ex: 15">
-      </div>
+      <div class="modal-field"><label class="flabel">Base CORSAN (m³)</label><input type="number" id="mBase" placeholder="ex: 314"></div>
+      <div class="modal-field"><label class="flabel">Consumo faturado (m³)</label><input type="number" id="mFranq" placeholder="ex: 17"></div>
     </div>
-
     <div class="modal-row">
-      <div class="modal-field">
-        <label class="modal-label">Valor água (R$)</label>
-        <input type="number" id="cfgWater" placeholder="ex: 124.20" step="0.01">
-      </div>
-      <div class="modal-field">
-        <label class="modal-label">Taxa fixa (R$)</label>
-        <input type="number" id="cfgFixed" placeholder="ex: 39.32" step="0.01">
-      </div>
+      <div class="modal-field"><label class="flabel">Valor água (R$)</label><input type="number" id="mWater" placeholder="ex: 140.76" step="0.01"></div>
+      <div class="modal-field"><label class="flabel">Taxa fixa (R$)</label><input type="number" id="mFixed" placeholder="ex: 39.32" step="0.01"></div>
     </div>
-
     <div class="modal-row">
-      <div class="modal-field">
-        <label class="modal-label">Data leitura CORSAN</label>
-        <input type="text" id="cfgCycleDate" placeholder="DD/MM/AAAA">
-      </div>
-      <div class="modal-field">
-        <label class="modal-label">Dias do ciclo</label>
-        <input type="number" id="cfgCycleDays" placeholder="ex: 31">
-      </div>
+      <div class="modal-field"><label class="flabel">Data leitura (DD/MM/AAAA)</label><input type="text" id="mDate" placeholder="02/04/2026"></div>
+      <div class="modal-field"><label class="flabel">Dias do ciclo</label><input type="number" id="mDays" placeholder="ex: 30"></div>
     </div>
-
-    <div class="modal-field">
-      <label class="modal-label">Referência (ex: Fev/2026)</label>
-      <input type="text" id="cfgRef" placeholder="ex: Fev/2026" maxlength="20">
-    </div>
-
+    <div class="modal-field"><label class="flabel">Referência (ex: Mai/2026)</label><input type="text" id="mRef" placeholder="Mai/2026" maxlength="20"></div>
     <div class="btn-row">
-      <button class="btn-cancel" onclick="closeConfig()">Cancelar</button>
-      <button class="btn-save"   onclick="saveConfig()">✓ Salvar e reiniciar ciclo</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save"   onclick="saveModal()">✓ Salvar e reiniciar ciclo</button>
     </div>
-
-    <button class="btn-clear-all" onclick="clearReadings()">
-      🗑 Zerar todas as leituras manuais do ciclo anterior
-    </button>
+    <button class="btn-danger" onclick="clearCycle()">🗑 Zerar leituras do ciclo anterior</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── CONFIG ── */
-const CORSAN_BASE     = 297;    // última leitura CORSAN Jan/2026 (dígitos pretos)
-const LAST_BILL_WATER = 124.20; // valor água última fatura (sem taxa fixa)
-const FRANCHISE       = 15;     // m³ consumidos na última fatura
-const FIXED_FEE       = 39.32;  // taxa serviço básico fixa (R$)
-const COST_M3         = +(LAST_BILL_WATER / FRANCHISE).toFixed(4); // = R$8,28/m³
-// Ciclo CORSAN: leitura anterior 282→297 ocorreu em ~22/Jan/2026 (31 dias de ciclo)
-const CYCLE_START_DATE = new Date(2026, 0, 22); // data leitura base CORSAN
-const CYCLE_DAYS_REAL  = 31;                    // duração do ciclo em dias
+/* ══ CONFIG ══ */
+let cfg = {
+  base: 314, franq: 17, water: 140.76, fixed: 39.32,
+  cycleDate: new Date(2026,3,2), cycleDays: 30, ref: 'Abr/2026'
+};
 
-/* ── DATA: cada leitura tem o valor COMPLETO do medidor ── */
+/* ══ ÁGUA DATA ══ */
 let readings = [
-  { date:'03/03', period:'Terça manhã',   v:29.791 },
-  { date:'04/03', period:'Quarta',        v:29.862 },
-  { date:'05/03', period:'Quinta manhã',  v:29.876 },
-  { date:'05/03', period:'Quinta tarde',  v:29.901 },
-  { date:'05/03', period:'Quinta noite',  v:29.916 },
-  { date:'06/03', period:'Sexta',         v:29.990 },
-  { date:'07/03', period:'Sábado manhã',  v:30.055 },
-  { date:'07/03', period:'Sábado noite',  v:30.084 },
-  { date:'08/03', period:'Domingo',       v:30.158 },
-  { date:'09/03', period:'Segunda',       v:30.187 },
-  { date:'09/03', period:'Segunda tarde', v:30.209 },
-  { date:'10/03', period:'Terça',         v:30.219 },
-  { date:'11/03', period:'Quarta',        v:30.239 },
-  { date:'11/03', period:'Quarta noite',  v:30.293 },
-  { date:'12/03', period:'Quinta',        v:30.298 },
-  { date:'13/03', period:'Sexta',         v:30.357 },
+  { date:'02/04', period:'Leitura CORSAN', v:31.400 },
 ];
 
-/* ── HELPERS ── */
-// CORSAN only reads the integer part (floor) of the meter value
-// e.g. 30.357 → 30 m³  |  29.862 → 29 m³
-const corsanRead = v => Math.floor(v);
+/* ══ HELPERS ══ */
+const cI  = v => Math.floor(v * 10);  // 30.357 → 303  (CORSAN integer)
+const brl = v => 'R$ ' + v.toFixed(2).replace('.',',');
+const m3f = v => v.toFixed(3).replace('.',',');
+const rawC= i => i===0 ? 0 : +(readings[i].v - readings[i-1].v).toFixed(3);
+const pd  = s => { const [d,m]=s.split('/').map(Number); return new Date(2026,m-1,d); };
 
-// split display: "030.357" → black="030", red="357"
-function splitReading(v) {
-  const intPart  = Math.floor(v);
-  const fracPart = Math.round((v - intPart) * 1000);
-  return {
-    black: String(intPart).padStart(3, '0'),
-    red:   String(fracPart).padStart(3, '0'),
-  };
-}
-
-// consumption between two readings in CORSAN integer m³
-const consCorsan = (a, b) => corsanRead(b) - corsanRead(a);
-
-// consumption in raw decimal for chart precision
-const consRaw = (i) => i === 0 ? 0 : +(readings[i].v - readings[i-1].v).toFixed(3);
-
-const fmt1 = v => v.toFixed(1).replace('.',',');
-const fmt3 = v => v.toFixed(3).replace('.',',');
-
-/* daily map using raw values for chart */
 function dailyMap() {
-  const m = {};
-  readings.forEach((r, i) => {
-    if (!m[r.date]) m[r.date] = { date: r.date, total: 0 };
-    m[r.date].total = +(m[r.date].total + consRaw(i)).toFixed(3);
+  const m={};
+  readings.forEach((r,i)=>{
+    if(!m[r.date]) m[r.date]={date:r.date,total:0};
+    m[r.date].total=+(m[r.date].total+rawC(i)).toFixed(3);
   });
   return Object.values(m);
 }
 
-/* ── GAUGE ── */
+/* ══ GAUGE ══ */
 function setGauge(pct) {
-  const r = 36, C = 2 * Math.PI * r; // ~226
-  const fill = document.getElementById('gaugeFill');
-  fill.style.strokeDasharray  = C;
-  fill.style.strokeDashoffset = C * (1 - Math.min(pct, 100) / 100);
-  document.getElementById('gaugePct').textContent = Math.round(pct) + '%';
+  const C=2*Math.PI*32; // r=32
+  const f=document.getElementById('gFill');
+  f.style.strokeDasharray=C;
+  f.style.strokeDashoffset=C*(1-Math.min(pct,100)/100);
+  document.getElementById('gPct').textContent=Math.round(pct)+'%';
 }
 
-/* ── MAIN UPDATE ── */
-function updateAll() {
-  const last  = readings[readings.length - 1];
-  const split = splitReading(last.v);
+/* ══ ÁGUA UPDATE ══ */
+function updateWater() {
+  const last=readings[readings.length-1];
+  const lCM3=cI(last.v);
+  const consumed=lCM3-cfg.base;
 
-  const lastCorsanM3 = corsanRead(last.v);       // e.g. 30
-  const cycleM3      = lastCorsanM3 - CORSAN_BASE; // e.g. 30 - 297 = -267?
-  // Note: CORSAN_BASE=297 but meter reads ~30 → that's because meter display is
-  // "030" = tens of m³, so 030 on the dial = 30 m³ consumed since last reset,
-  // but CORSAN reads cumulative: 297 was on fatura, now 303 cumulative.
-  // The meter v values are stored as 29.xxx/30.xxx which are the PHYSICAL dial
-  // reading (xxx.yyy format where the integer part cycles 0-999).
-  // Correcting: CORSAN 297 corresponds to meter display 297, now 303.
-  // Our stored values 29.xxx = 029.xxx → CORSAN would read 029 = 29 ≠ 297.
-  // Solution: readings are stored as RELATIVE to current cycle display.
-  // First reading 29.791 → CORSAN reads 029 (dial shows 029).
-  // CORSAN base was 297 on the bill, last reading was 303 = 30.357 → floor = 30?
-  // Actually looking at the image: meter shows 030158 → CORSAN reads first 5 black = 03015 or 030?
-  // User says CORSAN uses first 3 = "303" from "030.157" → so meter is 030.xxx and CORSAN reads "030" = 30 as hundreds? No.
-  // User clarified: last reading 303, first was 297. So meter 030.357 → CORSAN reads 303? That means
-  // they read leading "03" + next digit = 030 → but user says 303. Let me re-read:
-  // "a CORSAN lê somente os números pretos que são os metros cúbicos, exemplo 30.357,
-  //  a CORSAN usa os 3 primeiros, 303, essa é a minha última leitura, a primeira foi 297"
-  // So from 30.357: "3 primeiros" = 3, 0, 3 → "303"? That means the meter display is
-  // actually "30.357" visually but physically the drum reads X X X . X X X
-  // and the black drums show digits that when read as 3-digit = 303.
-  // Image shows: 0 3 0 1 5 [red] 8 → so black = 03015, red = 8
-  // CORSAN takes first 3 black = 030 = 30 m³? But user says 303.
-  // Most likely: meter shows cumulative m³ and the dial has 5 black + 2 red.
-  // "030158" → CORSAN reads the 5 black digits = 03015? Or just the whole integer = 30158?
-  // Simpler: CORSAN reads the WHOLE INTEGER portion. 030.xxx means ~30 m³? No, that makes no sense
-  // for a residential meter that's been running for years — it should be in the hundreds.
-  // MOST LIKELY: the stored values in the readings (29.xxx, 30.xxx) are WRONG representation.
-  // The REAL meter values are 029.xxx (= 029 cubic meters displayed) and the image shows 030158
-  // meaning 030.158 m³ TOTAL cumulative, so CORSAN reads 030 = 30? But user says 303.
-  // CONCLUSION: User is reading the meter as "030.1 5 8" where CORSAN takes digits as "303" 
-  // meaning the meter is actually showing "303.xx" and user stored 30.3xx (dropped a digit).
-  // The image barcode Y23SG2607429 matches fatura. Meter shows 030158 → if we read as 0301.58
-  // then CORSAN takes 0301? No. 
-  // FINAL INTERPRETATION based on user's direct statement: meter 30.357 → CORSAN reads "303".
-  // So stored value 30.357 means the dial shows "303.57" and user wrote it as 30.357 (shorthand).
-  // CORSAN_BASE = 297, last = 303 → cycle consumption = 303-297 = 6 m³. ✓
-  // So: corsanInt(v) = Math.round(v * 10) = integer read by CORSAN (e.g. 29.791→298, 30.357→304)
-  // Wait: 30.357 → 303 means multiply by 10 and floor: floor(30.357*10) = floor(303.57) = 303 ✓
-  // And 29.791 → floor(29.791*10) = floor(297.91) = 297 ✓ (matches CORSAN base!)
-  
-  // corsanInt: floor(v * 10) gives CORSAN integer reading
-  // e.g. 30.357 → floor(303.57) = 303
-  const corsanInt = v => Math.floor(v * 10);
+  // days elapsed
+  const first=pd(readings[0].date);
+  const lastD=pd(last.date);
+  const daysEl=Math.max(1,Math.round((lastD-first)/86400000));
 
-  const lastCM3       = corsanInt(last.v);
-  const cycleConsumed = lastCM3 - cfg.corsanBase;
+  // cycle projection
+  const cycleEnd=new Date(cfg.cycleDate.getTime()+cfg.cycleDays*86400000);
+  const daysRem=Math.max(0,Math.round((cycleEnd-lastD)/86400000));
+  const avg=consumed>0 ? +(consumed/daysEl).toFixed(3) : 0;
+  const projM3=+(consumed + avg*daysRem).toFixed(1);
+  const pct=consumed>=0 ? +(consumed/cfg.franq*100).toFixed(1) : 0;
 
-  // Days elapsed: from first reading date to last reading date (dynamic)
-  function parseDate(str) {
-    // str = "DD/MM", year always 2026
-    const [d, m] = str.split('/').map(Number);
-    return new Date(2026, m - 1, d);
-  }
-  const firstDate   = parseDate(readings[0].date);
-  const lastDate    = parseDate(readings[readings.length - 1].date);
-  const daysElapsed = Math.max(1, Math.round((lastDate - firstDate) / 86400000));
+  // projected invoice
+  const costM3=cfg.water/cfg.franq;
+  const projVal=+(cfg.fixed + projM3*costM3).toFixed(2);
 
-  // Days remaining in the CORSAN cycle from last reading
-  const cycleEndDate   = new Date(cfg.cycleStartDate.getTime() + cfg.cycleDays * 86400000);
-  const daysRemaining  = Math.max(0, Math.round((cycleEndDate - lastDate) / 86400000));
-  const totalCycleDays = Math.round((cycleEndDate - firstDate) / 86400000) + daysElapsed;
+  // reading display split: v*10 → integer=CORSAN, decimal=red
+  const fs=(last.v*10).toFixed(2);
+  const dot=fs.indexOf('.');
+  const blk=fs.slice(0,dot).padStart(3,'0');
+  const red=fs.slice(dot+1).padStart(2,'0');
 
-  // Daily average consumption (m³/day) based on CORSAN integers
-  const dailyAvg = cycleConsumed > 0 ? +(cycleConsumed / daysElapsed).toFixed(3) : 0;
+  // DOM updates
+  document.getElementById('rdBlack').textContent=blk;
+  document.getElementById('rdRed').textContent=red;
+  document.getElementById('rdLegend').textContent=blk;
+  document.getElementById('mDate').textContent=last.date+'/2026';
 
-  // Projected total for the full cycle = already consumed + (avg × remaining days)
-  const projExtra = +(dailyAvg * daysRemaining).toFixed(1);
-  const projTotal = +(cycleConsumed + projExtra);
-  const proj      = projTotal.toFixed(1);
-  const pct       = +(cycleConsumed / FRANCHISE * 100).toFixed(1);
+  document.getElementById('tcCorsan').textContent=cfg.base+' m³';
+  document.getElementById('tcManual').textContent=lCM3+' m³';
+  document.getElementById('tcManualSub').textContent=last.date+'/2026 · dígitos pretos';
+  document.getElementById('tcCycle').textContent=(consumed>=0?consumed:'0')+' m³';
+  document.getElementById('tcCycleSub').textContent=avg.toFixed(3).replace('.',',')+' m³/dia · '+daysEl+' dias';
+  document.getElementById('tcFixed').textContent=brl(cfg.fixed);
+  document.getElementById('tcProj').textContent=consumed>=0 ? brl(projVal) : 'R$ —';
+  document.getElementById('tcProjSub').textContent=brl(cfg.fixed)+' + '+projM3+'m³ × '+brl(costM3);
 
-  // ── Meter display ──
-  // split: e.g. 30.357 → black="303", red="57" (after * 10)
-  const fullStr  = (last.v * 10).toFixed(2); // "303.57"
-  const dotIdx   = fullStr.indexOf('.');
-  const blackStr = fullStr.slice(0, dotIdx).padStart(3, '0');  // "303"
-  const redStr   = fullStr.slice(dotIdx + 1).padStart(2, '0'); // "57"
-
-  document.getElementById('rdBlack').textContent     = blackStr;
-  document.getElementById('rdRed').textContent       = redStr;
-  document.getElementById('legendCorsan').textContent = blackStr;
-  document.getElementById('mDateBadge').textContent  = last.date + '/2026';
-
-  // ── Top cards ──
-  document.getElementById('tcCorsan').textContent    = cfg.corsanBase + ' m³';
-  document.getElementById('tcManual').textContent    = lastCM3 + ' m³';
-  document.getElementById('tcManualDate').textContent= last.date + '/2026 · dígitos pretos';
-  document.getElementById('tcCycle').textContent     = cycleConsumed + ' m³';
-  document.getElementById('tcAvgSub').textContent    = 'média ' + dailyAvg + ' m³/dia';
-
-  // ── Meter chips ──
-  document.getElementById('chipCycle').textContent   = cycleConsumed + ' m³';
-  document.getElementById('chipProj').textContent    = proj + ' m³ (' + daysRemaining + ' dias restantes)';
+  document.getElementById('chipCycle').textContent=(consumed>=0?consumed:'0')+' m³';
+  document.getElementById('chipProj').textContent=projM3+' m³ ('+daysRem+' dias rest.)';
 
   // status
-  const statusEl = document.getElementById('statusText');
-  if (pct > 90)      { statusEl.textContent = 'Atenção!'; statusEl.style.color = 'var(--danger)'; }
-  else if (pct > 60) { statusEl.textContent = 'Moderado'; statusEl.style.color = 'var(--warn)'; }
-  else               { statusEl.textContent = 'Normal';   statusEl.style.color = 'var(--green)'; }
+  const st=document.getElementById('statusTxt');
+  if(pct>90){st.textContent='Atenção!';st.style.color='var(--danger)'}
+  else if(pct>60){st.textContent='Moderado';st.style.color='var(--warn)'}
+  else{st.textContent='Normal';st.style.color='var(--green)'}
 
-  // ── Gauge ──
-  setGauge(pct);
+  setGauge(pct>=0?pct:0);
 
-  // ── Progress ──
-  document.getElementById('progUsed').textContent  = cycleConsumed + ' m³';
-  document.getElementById('progFill').style.width  = Math.min(pct, 100) + '%';
-  document.getElementById('progProj').textContent  = 'proj. ' + proj + ' m³ / ciclo';
-
-  // ── Projected invoice value ──
-  const costM3     = +(cfg.lastBillWater / cfg.franchise);
-  const projM3Val  = parseFloat(proj) || 0;
-  const projWater  = +(projM3Val * costM3).toFixed(2);
-  const projInvTot = +(cfg.fixedFee + projWater).toFixed(2);
-  const fmtBRL     = v => 'R$ ' + v.toFixed(2).replace('.', ',');
-  const fmtM3c     = v => v.toFixed(3).replace('.', ',');
-
-  document.getElementById('tcProjValue').textContent = fmtBRL(projInvTot);
-  document.getElementById('tcProjSub').textContent   =
-    fmtBRL(cfg.fixedFee) + ' + ' + projM3Val + ' m³ × ' + fmtBRL(costM3);
-
-  // update cycle card sub with avg and days
-  document.getElementById('tcAvgSub').textContent =
-    fmtM3c(dailyAvg) + ' m³/dia · ' + daysElapsed + ' dias medidos';
-
-  // update progress franchise label
-  document.getElementById('progFranchiseLabel').textContent = cfg.franchise + ' m³';
-
-  // refresh invoice card
-  updateInvoiceCard();
+  document.getElementById('progUsed').textContent=(consumed>=0?consumed:'0')+' m³';
+  document.getElementById('progFranq').textContent=cfg.franq+' m³';
+  document.getElementById('progMax').textContent=cfg.franq+' m³';
+  document.getElementById('progFill').style.width=Math.min(Math.max(pct,0),100)+'%';
+  document.getElementById('progProj').textContent='proj. '+projM3+' m³';
+  document.getElementById('gSub').innerHTML=cfg.franq+' m³/ciclo<br>'+brl(cfg.fixed+cfg.water);
 }
 
-/* ── TABLE ── */
-function renderTable() {
-  const corsanInt = v => Math.floor(v * 10);
-  const tb = document.getElementById('logBody');
-  tb.innerHTML = '';
+/* ══ WATER TABLE ══ */
 
-  [...readings].reverse().forEach((r, ri) => {
-    const i   = readings.length - 1 - ri;
-    const cm3 = corsanInt(r.v);
-    const deltaBase = cm3 - CORSAN_BASE;
-
-    // consumption between adjacent readings (raw)
-    const rawCons = i === 0 ? 0 : +(r.v - readings[i-1].v).toFixed(3);
-    const first   = i === 0;
-
-    // CORSAN delta between adjacent readings
-    const cm3Prev    = i === 0 ? corsanInt(readings[0].v) : corsanInt(readings[i-1].v);
-    const cm3Delta   = i === 0 ? 0 : cm3 - cm3Prev;
-
-    const barPct = first ? 0 : Math.min(rawCons / 0.18 * 100, 100);
-    const barCol = rawCons > 0.1 ? '#ef4444' : rawCons > 0.05 ? '#f59e0b' : '#22c55e';
-    const pill   = first ? '' :
-      rawCons > 0.1  ? '<span class="pill pill-danger">Alto</span>'  :
-      rawCons > 0.05 ? '<span class="pill pill-warn">Médio</span>'   :
-                       '<span class="pill pill-green">Baixo</span>';
-
-    // split for table
-    const fullStr  = (r.v * 10).toFixed(2);
-    const dotIdx   = fullStr.indexOf('.');
-    const bk       = fullStr.slice(0, dotIdx).padStart(3, '0');
-    const rd       = fullStr.slice(dotIdx + 1).padStart(2, '0');
-
-    tb.innerHTML += `<tr>
-      <td class="mono c-t2">${r.date}</td>
+/* ══ DELETE READING (ÁGUA) ══ */
+function deleteReading(idx) {
+  if (readings.length <= 1) { showToast('⚠ Não é possível apagar a única leitura', '#f59e0b'); return; }
+  const r = readings[idx];
+  if (!confirm('Apagar leitura de ' + r.date + ' (' + (r.v*10).toFixed(1).replace('.',',') + ' m³)?\nEssa ação não pode ser desfeita.')) return;
+  readings.splice(idx, 1);
+  updateAll();
+  renderWaterTable();
+  renderWaterChart();
+  showToast('✓ Leitura de ' + r.date + ' apagada', '#22c55e');
+}
+function renderWaterTable() {
+  const tb=document.getElementById('waterBody');
+  tb.innerHTML='';
+  [...readings].reverse().forEach((r,ri)=>{
+    const i=readings.length-1-ri;
+    const cm3=cI(r.v);
+    const delta=cm3-cfg.base;
+    const rc=rawC(i);
+    const first=i===0;
+    const bp=first?0:Math.min(rc/0.18*100,100);
+    const bc=rc>0.1?'#ef4444':rc>0.05?'#f59e0b':'#22c55e';
+    const pill=first?'':rc>0.1?'<span class="pill pd">Alto</span>':rc>0.05?'<span class="pill pw">Médio</span>':'<span class="pill pg">Baixo</span>';
+    const fs=(r.v*10).toFixed(2);const dot=fs.indexOf('.');
+    const bk=fs.slice(0,dot).padStart(3,'0');const rd=fs.slice(dot+1).padStart(2,'0');
+    const isFirst = i===0;
+    tb.innerHTML+=`<tr>
+      <td class="mono ct">${r.date}</td>
       <td>${r.period}</td>
-      <td>
-        <div class="td-reading">
-          <span class="td-black">${bk}</span>
-          <span class="td-sep">,</span>
-          <span class="td-red">${rd}</span>
-        </div>
-      </td>
-      <td class="mono c-blue" style="font-weight:700">${cm3} m³</td>
-      <td class="mono c-warn">+${deltaBase} m³</td>
-      <td>${first ? '—' :
-        `<div class="bar-cell">
-          <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${barCol}"></div></div>
-          <span style="font-size:.7rem;color:var(--t2)">${fmt3(rawCons)}</span>
-        </div>`}
-      </td>
+      <td><span style="color:var(--t1);font-family:'JetBrains Mono',monospace;font-weight:600">${bk}</span><span style="color:var(--t3);font-family:'JetBrains Mono',monospace">,</span><span style="color:#f87171;font-family:'JetBrains Mono',monospace">${rd}</span></td>
+      <td class="mono cb" style="font-weight:700">${cm3} m³</td>
+      <td class="mono cw">${delta>=0?'+'+delta:'—'} m³</td>
+      <td>${first?'—':`<div class="bar-cell"><div class="btrack"><div class="bfill" style="width:${bp}%;background:${bc}"></div></div><span style="font-size:.68rem;color:var(--t2)">${m3f(rc)}</span></div>`}</td>
       <td>${pill}</td>
+      <td><button class="del-btn" onclick="deleteReading(${i})" title="Apagar leitura">🗑</button></td>
     </tr>`;
   });
 }
 
-/* ── CHART ── */
-function renderChart() {
-  const canvas = document.getElementById('chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const W   = canvas.parentElement.clientWidth - 28;
-  const H   = 160;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
-
-  const daily = dailyMap();
-  const vals  = daily.map(d => d.total);
-  const maxV  = Math.max(...vals, 0.05);
-  const n     = daily.length;
-  const pad   = { t:16, r:8, b:34, l:40 };
-  const cw    = W - pad.l - pad.r;
-  const ch    = H - pad.t - pad.b;
-  const bw    = Math.max(Math.floor(cw / n * 0.6), 4);
-
-  ctx.clearRect(0, 0, W, H);
-
-  for (let g = 0; g <= 3; g++) {
-    const y = pad.t + ch - (g / 3) * ch;
-    ctx.strokeStyle = '#1f2d45';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + cw, y); ctx.stroke();
-    ctx.fillStyle = '#475569';
-    ctx.font = '9px Inter';
-    ctx.textAlign = 'right';
-    ctx.fillText((maxV * g / 3).toFixed(2).replace('.', ','), pad.l - 4, y + 4);
+/* ══ WATER CHART ══ */
+function renderWaterChart() {
+  const canvas=document.getElementById('waterChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth-26;
+  const H=150;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  const daily=dailyMap();
+  const vals=daily.map(d=>d.total);
+  const maxV=Math.max(...vals,0.05);
+  const n=daily.length;
+  const pad={t:14,r:6,b:32,l:36};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  const bw=Math.max(Math.floor(cw/Math.max(n,1)*0.6),4);
+  ctx.clearRect(0,0,W,H);
+  for(let g=0;g<=3;g++){
+    const y=pad.t+ch-(g/3)*ch;
+    ctx.strokeStyle='#1f2d45';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.fillStyle='#475569';ctx.font='8px Inter';ctx.textAlign='right';
+    ctx.fillText((maxV*g/3).toFixed(2).replace('.',','),pad.l-3,y+3);
   }
-
-  daily.forEach((d, i) => {
-    const barH = Math.max((d.total / maxV) * ch, d.total > 0 ? 2 : 0);
-    const x = pad.l + (i / n) * cw + (cw / n - bw) / 2;
-    const y = pad.t + ch - barH;
-
-    const grad = ctx.createLinearGradient(0, y, 0, pad.t + ch);
-    if (d.total > 0.1)       { grad.addColorStop(0,'rgba(239,68,68,.85)');  grad.addColorStop(1,'rgba(239,68,68,.1)'); }
-    else if (d.total > 0.05) { grad.addColorStop(0,'rgba(245,158,11,.85)'); grad.addColorStop(1,'rgba(245,158,11,.1)'); }
-    else                     { grad.addColorStop(0,'rgba(56,189,248,.9)');  grad.addColorStop(1,'rgba(56,189,248,.1)'); }
-
-    ctx.fillStyle = grad;
+  daily.forEach((d,i)=>{
+    const barH=Math.max((d.total/maxV)*ch,d.total>0?2:0);
+    const x=pad.l+(i/n)*cw+(cw/n-bw)/2;
+    const y=pad.t+ch-barH;
+    const grad=ctx.createLinearGradient(0,y,0,pad.t+ch);
+    if(d.total>0.1){grad.addColorStop(0,'rgba(239,68,68,.85)');grad.addColorStop(1,'rgba(239,68,68,.1)')}
+    else if(d.total>0.05){grad.addColorStop(0,'rgba(245,158,11,.85)');grad.addColorStop(1,'rgba(245,158,11,.1)')}
+    else{grad.addColorStop(0,'rgba(56,189,248,.9)');grad.addColorStop(1,'rgba(56,189,248,.1)')}
+    ctx.fillStyle=grad;
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(x, y, bw, barH, [3, 3, 0, 0]);
-    else ctx.rect(x, y, bw, barH);
+    if(ctx.roundRect)ctx.roundRect(x,y,bw,barH,[3,3,0,0]);else ctx.rect(x,y,bw,barH);
     ctx.fill();
-
-    ctx.fillStyle = '#475569';
-    ctx.font = '9px Inter';
-    ctx.textAlign = 'center';
-    ctx.fillText(d.date.slice(0, 2), x + bw / 2, pad.t + ch + 16);
-
-    if (d.total > 0) {
-      ctx.fillStyle = 'rgba(148,163,184,.65)';
-      ctx.font = '8px JetBrains Mono';
-      ctx.fillText(d.total.toFixed(2).replace('.', ','), x + bw / 2, y - 4);
-    }
+    ctx.fillStyle='#475569';ctx.font='8px Inter';ctx.textAlign='center';
+    ctx.fillText(d.date.slice(0,2),x+bw/2,pad.t+ch+16);
+    if(d.total>0){ctx.fillStyle='rgba(148,163,184,.65)';ctx.font='8px JetBrains Mono';ctx.fillText(d.total.toFixed(2).replace('.',','),x+bw/2,y-4)}
   });
-  ctx.textAlign = 'left';
+  ctx.textAlign='left';
 }
 
-/* ── ADD READING ── */
+/* ══ ADD WATER READING ══ */
 function addReading() {
-  const corsanInt = v => Math.floor(v * 10);
-  const date = document.getElementById('inDate').value.trim();
-  const per  = document.getElementById('inPer').value.trim() || 'Manual';
-  const val  = parseFloat(document.getElementById('inVal').value);
-  const prev = readings[readings.length - 1].v;
-
-  if (!date || !/^\d{2}\/\d{2}$/.test(date)) {
-    showToast('⚠ Data inválida. Use DD/MM', '#f59e0b'); return;
-  }
-  if (isNaN(val) || val <= prev) {
-    showToast('⚠ Leitura deve ser maior que ' + prev.toFixed(3).replace('.', ','), '#ef4444'); return;
-  }
-
-  readings.push({ date, period: per, v: +val.toFixed(3) });
-  document.getElementById('inDate').value = '';
-  document.getElementById('inPer').value  = '';
-  document.getElementById('inVal').value  = '';
-
-  const cm3 = corsanInt(val);
-  updateAll(); renderTable(); renderChart();
-  showToast('✓ Leitura registrada · CORSAN: ' + cm3 + ' m³', '#22c55e');
+  const date=document.getElementById('wDate').value.trim();
+  const per=document.getElementById('wPer').value.trim()||'Manual';
+  const val=parseFloat(document.getElementById('wVal').value);
+  const prev=readings[readings.length-1].v;
+  if(!date||!/^\d{2}\/\d{2}$/.test(date)){showToast('⚠ Data inválida. Use DD/MM','#f59e0b');return}
+  if(isNaN(val)||val<=prev){showToast('⚠ Leitura deve ser > '+prev.toFixed(3).replace('.',','),'#ef4444');return}
+  readings.push({date,period:per,v:+val.toFixed(3)});
+  document.getElementById('wDate').value='';document.getElementById('wPer').value='';document.getElementById('wVal').value='';
+  updateWater();renderWaterTable();renderWaterChart();
+  showToast('✓ Leitura registrada · '+cI(val)+' m³ CORSAN','#22c55e');
 }
 
-function showToast(msg, color) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.color = color || 'var(--t1)';
-  el.style.borderColor = (color || '#38bdf8') + '55';
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 3000);
+/* ══ MODAL ══ */
+function openModal(){
+  const d=cfg.cycleDate;
+  const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('mBase').value=cfg.base;
+  document.getElementById('mFranq').value=cfg.franq;
+  document.getElementById('mWater').value=cfg.water.toFixed(2);
+  document.getElementById('mFixed').value=cfg.fixed.toFixed(2);
+  document.getElementById('mDate').value=dd+'/'+mm+'/'+d.getFullYear();
+  document.getElementById('mDays').value=cfg.cycleDays;
+  document.getElementById('mRef').value=cfg.ref;
+  document.getElementById('backdrop').classList.add('open');
+}
+function closeModal(){document.getElementById('backdrop').classList.remove('open')}
+function closeModalOut(e){if(e.target===document.getElementById('backdrop'))closeModal()}
+function saveModal(){
+  const base=parseInt(document.getElementById('mBase').value);
+  const franq=parseInt(document.getElementById('mFranq').value);
+  const water=parseFloat(document.getElementById('mWater').value);
+  const fixed=parseFloat(document.getElementById('mFixed').value);
+  const ds=document.getElementById('mDate').value.trim();
+  const days=parseInt(document.getElementById('mDays').value);
+  const ref=document.getElementById('mRef').value.trim()||'Nova fatura';
+  if([base,franq,water,fixed,days].some(isNaN)){showToast('⚠ Preencha todos os campos','#f59e0b');return}
+  if(!/^\d{2}\/\d{2}\/\d{4}$/.test(ds)){showToast('⚠ Data inválida: use DD/MM/AAAA','#f59e0b');return}
+  const [dd,mm,aa]=ds.split('/').map(Number);
+  cfg={base,franq,water,fixed,cycleDate:new Date(aa,mm-1,dd),cycleDays:days,ref};
+  closeModal();updateWater();renderWaterTable();renderWaterChart();updateInvCard();
+  showToast('✓ Configuração salva · Base: '+base+' m³','#22c55e');
+}
+function clearCycle(){
+  if(!confirm('Zerar todas as leituras manuais?\nApenas a leitura CORSAN base será mantida.'))return;
+  const last=readings[readings.length-1];
+  readings=[{date:cfg.cycleDate.getMonth()+1 < 10 ? '0'+(cfg.cycleDate.getDate())+'/0'+(cfg.cycleDate.getMonth()+1) : cfg.cycleDate.getDate()+'/'+(cfg.cycleDate.getMonth()+1), period:'Leitura CORSAN', v:cfg.base/10}];
+  closeModal();updateWater();renderWaterTable();renderWaterChart();
+  showToast('✓ Leituras zeradas · Base: '+cfg.base+' m³','#22c55e');
+}
+function updateInvCard(){
+  const costM3=cfg.water/cfg.franq;
+  const total=cfg.water+cfg.fixed;
+  document.getElementById('invTitle').childNodes[0].textContent='Fatura '+cfg.ref;
+  document.getElementById('invContent').innerHTML=`
+    <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">${cfg.ref}</span></div>
+    <div class="inv-row"><span class="inv-label">Leitura base atual</span><span class="inv-value mono cb">${cfg.base} m³</span></div>
+    <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">${cfg.franq} m³</span></div>
+    <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">${brl(cfg.water)}</span></div>
+    <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value cw">${brl(costM3)}/m³</span></div>
+    <div class="inv-row"><span class="inv-label">Taxa fixa</span><span class="inv-value">${brl(cfg.fixed)}</span></div>
+    <div class="inv-row inv-total"><span class="inv-label">Total</span><span class="inv-value">${brl(total)}</span></div>
+    <div class="inv-box purple">📌 Taxa de serviço: <strong>${brl(cfg.fixed)}/mês</strong> (fixa)</div>
+    <div class="inv-box green">✓ Custo/m³: <strong>${brl(costM3)}</strong> · Ciclo: ${cfg.cycleDays} dias</div>
+  `;
 }
 
+/* ══ FUEL ══ */
+let fuels=[];
+function addFuel(){
+  const date=document.getElementById('fDate').value.trim();
+  const km=parseFloat(document.getElementById('fKm').value);
+  const lit=parseFloat(document.getElementById('fLitros').value);
+  const price=parseFloat(document.getElementById('fPrice').value);
+  if(!date||!/^\d{2}\/\d{2}$/.test(date)){showToast('⚠ Data inválida','#f59e0b');return}
+  if(isNaN(km)||km<=0){showToast('⚠ KM inválido','#f59e0b');return}
+  if(isNaN(lit)||lit<=0){showToast('⚠ Litros inválido','#f59e0b');return}
+  if(isNaN(price)||price<=0){showToast('⚠ Preço inválido','#f59e0b');return}
+  if(fuels.length>0&&km<=fuels[fuels.length-1].km){showToast('⚠ KM deve ser > '+fuels[fuels.length-1].km,'#f59e0b');return}
+  fuels.push({date,km,lit:+lit.toFixed(2),price:+price.toFixed(3)});
+  ['fDate','fKm','fLitros','fPrice'].forEach(id=>document.getElementById(id).value='');
+  // auto-add expense
+  const total=+(lit*price).toFixed(2);
+  expenses.push({date,cat:'Combustível',desc:'Combustível · '+lit.toFixed(2).replace('.',',')+'L @ R$'+price.toFixed(2).replace('.',','),val:total});
+  renderFuel();renderExps();
+  showToast('✓ Abastecimento registrado · '+km.toLocaleString('pt-BR')+' km','#22c55e');
+}
 
-/* ── CONFIG MODAL ── */
-// Mutable config (can be updated when new bill arrives)
-let cfg = {
-  corsanBase:    297,
-  franchise:     15,
-  lastBillWater: 124.20,
-  fixedFee:      39.32,
-  cycleStartDate: new Date(2026, 0, 22), // 22/Jan/2026
-  cycleDays:     31,
-  billRef:       'Jan/2026',
+/* ══ DELETE FUEL ══ */
+function deleteFuel(idx) {
+  if (fuels.length === 0) return;
+  const f = fuels[idx];
+  if (!confirm('Apagar abastecimento de ' + f.date + ' (' + (f.lit||f.litros) + ' L @ ' + f.km + ' km)?\nEssa ação não pode ser desfeita.')) return;
+  fuels.splice(idx, 1);
+  renderFuel();
+  showToast('✓ Abastecimento de ' + f.date + ' apagado', '#22c55e');
+}
+function renderFuel(){
+  const tb=document.getElementById('fuelBody');
+  tb.innerHTML='';
+  let totLit=0,totSpent=0,totKm=0,kmlS=0,kmlN=0;
+  let lastKml=null;
+  [...fuels].reverse().forEach((f,ri)=>{
+    const i=fuels.length-1-ri;
+    const prev=fuels[i-1];
+    const kdiff=prev?f.km-prev.km:null;
+    const kml=kdiff&&f.lit>0?+(kdiff/f.lit).toFixed(2):null;
+    const spent=+(f.lit*f.price).toFixed(2);
+    if(kml){kmlS+=kml;kmlN++;if(i===fuels.length-1)lastKml=kml}
+    totLit+=f.lit;totSpent+=spent;
+    if(prev)totKm=Math.max(totKm,f.km-fuels[0].km);
+    const kc=!kml?'var(--t3)':kml>=12?'var(--green)':kml>=9?'var(--warn)':'var(--danger)';
+    tb.innerHTML+=`<tr>
+      <td class="mono ct">${f.date}</td>
+      <td class="mono">${f.km.toLocaleString('pt-BR')}</td>
+      <td class="mono cb">${f.lit.toFixed(2).replace('.',',')} L</td>
+      <td class="mono ct">R$ ${f.price.toFixed(3).replace('.',',')}</td>
+      <td class="mono cd">R$ ${spent.toFixed(2).replace('.',',')}</td>
+      <td class="mono cw">${kdiff?'+'+kdiff.toLocaleString('pt-BR')+' km':'—'}</td>
+      <td class="mono" style="color:${kc};font-weight:700">${kml?kml.toFixed(2).replace('.',','):'—'}</td>
+      <td><button class="del-btn" onclick="deleteFuel(${i})" title="Apagar">🗑</button></td>
+    </tr>`;
+  });
+  // result card
+  const kE=document.getElementById('kmlVal'),tE=document.getElementById('kmlTag'),dE=document.getElementById('kmlDetail');
+  if(fuels.length===0){kE.textContent='—';tE.style.display='none';dE.textContent='Registre ao menos 2 abastecimentos para calcular.';document.getElementById('fAvg').textContent='—';document.getElementById('fSpent').textContent='R$ 0,00';document.getElementById('fLit').textContent='0 L';document.getElementById('fKmTot').textContent='—';document.getElementById('fCKm').textContent='—';document.getElementById('fCnt').textContent='0x';return;}
+  if(lastKml){
+    kE.textContent=lastKml.toFixed(2).replace('.',',');
+    tE.style.display='inline-block';
+    if(lastKml>=12){tE.textContent='Ótimo ✓';tE.className='kml-tag ktg';kE.style.color='var(--green)'}
+    else if(lastKml>=9){tE.textContent='Regular';tE.className='kml-tag ktw';kE.style.color='var(--warn)'}
+    else{tE.textContent='Baixo ⚠';tE.className='kml-tag ktd';kE.style.color='var(--danger)'}
+    const last=fuels[fuels.length-1],prev2=fuels[fuels.length-2];
+    dE.innerHTML='<strong style="color:var(--t1)">'+(last.km-prev2.km).toLocaleString('pt-BR')+' km</strong> com <strong style="color:var(--t1)">'+last.lit.toFixed(2).replace('.',',')+' L</strong><br>'+prev2.km.toLocaleString('pt-BR')+' → '+last.km.toLocaleString('pt-BR')+' km';
+  }else{kE.textContent='—';tE.style.display='none'}
+  const avgKml=kmlN>0?(kmlS/kmlN).toFixed(2).replace('.',','):'—';
+  const cKm=totKm>0?brl(totSpent/totKm):'—';
+  document.getElementById('fAvg').textContent=avgKml+(kmlN?' km/L':'');
+  document.getElementById('fSpent').textContent=brl(totSpent);
+  document.getElementById('fLit').textContent=totLit.toFixed(2).replace('.',',')+' L';
+  document.getElementById('fKmTot').textContent=totKm>0?totKm.toLocaleString('pt-BR')+' km':'—';
+  document.getElementById('fCKm').textContent=cKm+'/km';
+  document.getElementById('fCnt').textContent=fuels.length+'x';
+}
+
+/* ══ EXPENSES ══ */
+let expenses=[];
+let selCatName='Combustível';
+let selMonth='all';
+const CATS={
+  'Combustível':{e:'⛽',c:'#f59e0b'},
+  'Alimentação':{e:'🍔',c:'#22c55e'},
+  'Contas fixas':{e:'📋',c:'#38bdf8'},
+  'Saúde':{e:'💊',c:'#f87171'},
+  'Lazer':{e:'🎮',c:'#a78bfa'},
+  'Outros':{e:'📦',c:'#94a3b8'},
 };
-
-function openConfig() {
-  const d = cfg.cycleStartDate;
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const aaaa = d.getFullYear();
-  document.getElementById('cfgBase').value      = cfg.corsanBase;
-  document.getElementById('cfgFranchise').value = cfg.franchise;
-  document.getElementById('cfgWater').value     = cfg.lastBillWater.toFixed(2);
-  document.getElementById('cfgFixed').value     = cfg.fixedFee.toFixed(2);
-  document.getElementById('cfgCycleDate').value = dd+'/'+mm+'/'+aaaa;
-  document.getElementById('cfgCycleDays').value = cfg.cycleDays;
-  document.getElementById('cfgRef').value       = cfg.billRef;
-  document.getElementById('modalBackdrop').classList.add('open');
+function selCat(el){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');selCatName=el.dataset.cat;
 }
-
-function closeConfig() {
-  document.getElementById('modalBackdrop').classList.remove('open');
+function addExp(){
+  const date=document.getElementById('eDate').value.trim();
+  const val=parseFloat(document.getElementById('eVal').value);
+  const desc=document.getElementById('eDesc').value.trim()||selCatName;
+  if(!date||!/^\d{2}\/\d{2}$/.test(date)){showToast('⚠ Data inválida','#f59e0b');return}
+  if(isNaN(val)||val<=0){showToast('⚠ Valor inválido','#f59e0b');return}
+  expenses.push({date,cat:selCatName,desc,val:+val.toFixed(2)});
+  ['eDate','eVal','eDesc'].forEach(id=>document.getElementById(id).value='');
+  renderExps();showToast('✓ Gasto registrado · '+brl(val),'#22c55e');
 }
+function delExp(idx){expenses.splice(idx,1);renderExps()}
+function setMonth(m){selMonth=m;renderExps()}
+function renderExps(){
+  const months={};
+  expenses.forEach(e=>{const k=e.date.split('/')[1];if(!months[k])months[k]=k});
+  // month filter
+  const mfEl=document.getElementById('monthFilter');
+  const mArr=Object.keys(months).sort();
+  const mNames={1:'Jan',2:'Fev',3:'Mar',4:'Abr',5:'Mai',6:'Jun',7:'Jul',8:'Ago',9:'Set',10:'Out',11:'Nov',12:'Dez'};
+  mfEl.innerHTML=`<button class="mf-btn ${selMonth==='all'?'active':''}" onclick="setMonth('all')">Todos</button>`
+    +mArr.map(k=>`<button class="mf-btn ${selMonth===k?'active':''}" onclick="setMonth('${k}')">${mNames[parseInt(k)]||k}</button>`).join('');
 
-function closeConfigOutside(e) {
-  if (e.target === document.getElementById('modalBackdrop')) closeConfig();
+  const filt=selMonth==='all'?expenses:expenses.filter(e=>e.date.split('/')[1]===selMonth);
+  const total=filt.reduce((s,e)=>s+e.val,0);
+  document.getElementById('expTotal').textContent=brl(total);
+  document.getElementById('expPeriodLbl').textContent=selMonth==='all'?'Todos os meses':(mNames[parseInt(selMonth)]||selMonth)+'/2026';
+
+  // cat totals
+  const ct={};Object.keys(CATS).forEach(c=>ct[c]=0);
+  filt.forEach(e=>{if(ct[e.cat]!==undefined)ct[e.cat]+=e.val});
+  const maxCat=Math.max(...Object.values(ct),1);
+  const catEl=document.getElementById('catSummary');
+  const active=Object.entries(ct).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  catEl.innerHTML=active.length===0?'<div class="empty">Nenhum gasto no período.</div>'
+    :active.map(([cat,val])=>{
+      const m=CATS[cat];const pct=(val/maxCat*100).toFixed(0);
+      return `<div class="exp-cat-row">
+        <div class="exp-cat-left"><span>${m.e}</span><span>${cat}</span></div>
+        <div class="exp-cat-bw"><div class="exp-cat-bf" style="width:${pct}%;background:${m.c}"></div></div>
+        <div class="exp-cat-val">${brl(val)}</div>
+      </div>`;
+    }).join('');
+
+  // list
+  const listEl=document.getElementById('expList');
+  listEl.innerHTML=filt.length===0?'<div class="empty">Nenhum lançamento no período.</div>'
+    :[...filt].reverse().map(e=>{
+      const realIdx=expenses.indexOf(e);
+      const m=CATS[e.cat]||CATS['Outros'];
+      return `<div class="exp-item">
+        <div class="exp-emoji">${m.e}</div>
+        <div class="exp-info"><div class="exp-desc">${e.desc}</div><div class="exp-meta">${e.date}/2026 · ${e.cat}</div></div>
+        <div class="exp-val">${brl(e.val)}</div>
+        <button class="exp-del" onclick="delExp(${realIdx})">✕</button>
+      </div>`;
+    }).join('');
+
+  renderExpChart(ct);
 }
-
-function saveConfig() {
-  const base      = parseInt(document.getElementById('cfgBase').value);
-  const franchise = parseInt(document.getElementById('cfgFranchise').value);
-  const water     = parseFloat(document.getElementById('cfgWater').value);
-  const fixed     = parseFloat(document.getElementById('cfgFixed').value);
-  const dateStr   = document.getElementById('cfgCycleDate').value.trim();
-  const cycleDays = parseInt(document.getElementById('cfgCycleDays').value);
-  const ref       = document.getElementById('cfgRef').value.trim() || 'Nova fatura';
-
-  if (isNaN(base) || isNaN(franchise) || isNaN(water) || isNaN(fixed) || isNaN(cycleDays)) {
-    showToast('⚠ Preencha todos os campos numéricos', '#f59e0b'); return;
+function renderExpChart(catTotals){
+  const canvas=document.getElementById('expChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth-26;
+  const H=170;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const cats=Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(!cats.length){ctx.fillStyle='#475569';ctx.font='13px Inter';ctx.textAlign='center';ctx.fillText('Nenhum dado',W/2,H/2);return}
+  const maxV=Math.max(...cats.map(([,v])=>v));
+  const n=cats.length;
+  const pad={t:18,r:6,b:44,l:48};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  const bw=Math.max(Math.floor(cw/n*0.55),6);
+  for(let g=0;g<=3;g++){
+    const y=pad.t+ch-(g/3)*ch;
+    ctx.strokeStyle='#1f2d45';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.fillStyle='#475569';ctx.font='9px Inter';ctx.textAlign='right';
+    ctx.fillText('R$'+(maxV*g/3).toFixed(0),pad.l-3,y+3);
   }
-  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-    showToast('⚠ Data inválida. Use DD/MM/AAAA', '#f59e0b'); return;
-  }
-  const [dd, mm, aaaa] = dateStr.split('/').map(Number);
-  const cycleDate = new Date(aaaa, mm - 1, dd);
-
-  cfg = { corsanBase: base, franchise, lastBillWater: water, fixedFee: fixed,
-          cycleStartDate: cycleDate, cycleDays, billRef: ref };
-
-  // Update the invoice card reference text
-  document.querySelector('.card .sec').textContent = '';
-  // Update static invoice display
-  updateInvoiceCard();
-
-  closeConfig();
-  updateAll(); renderTable(); renderChart();
-  showToast('✓ Configuração salva · Base: ' + base + ' m³', '#22c55e');
+  cats.forEach(([cat,val],i)=>{
+    const m=CATS[cat];
+    const barH=Math.max((val/maxV)*ch,2);
+    const x=pad.l+(i/n)*cw+(cw/n-bw)/2;
+    const y=pad.t+ch-barH;
+    const grad=ctx.createLinearGradient(0,y,0,pad.t+ch);
+    grad.addColorStop(0,m.c+'dd');grad.addColorStop(1,m.c+'22');
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(x,y,bw,barH,[3,3,0,0]);else ctx.rect(x,y,bw,barH);
+    ctx.fill();
+    ctx.font='12px serif';ctx.textAlign='center';
+    ctx.fillText(m.e,x+bw/2,pad.t+ch+16);
+    ctx.font='7px Inter';ctx.fillStyle='#475569';
+    ctx.fillText(cat.length>7?cat.slice(0,6)+'.':cat,x+bw/2,pad.t+ch+30);
+    ctx.fillStyle='rgba(148,163,184,.7)';ctx.font='8px JetBrains Mono';
+    ctx.fillText('R$'+val.toFixed(0),x+bw/2,y-4);
+  });
+  ctx.textAlign='left';
 }
 
-function clearReadings() {
-  if (!confirm('Zerar TODAS as leituras manuais do ciclo anterior?\nEssa ação não pode ser desfeita.')) return;
-  // Keep only the most recent reading as starting point for new cycle
-  const lastReading = readings[readings.length - 1];
-  readings = [lastReading];
-  closeConfig();
-  updateAll(); renderTable(); renderChart();
-  showToast('✓ Leituras zeradas · Nova base: ' + cfg.corsanBase + ' m³', '#22c55e');
+/* ══ TABS ══ */
+function switchTab(name){
+  const names=['agua','combustivel','gastos'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById('tab-'+name);if(p)p.classList.add('active');
+  setTimeout(()=>{renderWaterChart();if(name==='gastos'){const ct={};Object.keys(CATS).forEach(c=>ct[c]=0);expenses.forEach(e=>{if(ct[e.cat]!==undefined)ct[e.cat]+=e.val});renderExpChart(ct)}},50);
 }
 
-function updateInvoiceCard() {
-  const costM3 = cfg.lastBillWater / cfg.franchise;
-  const total  = +(cfg.lastBillWater + cfg.fixedFee).toFixed(2);
-  const fmtBRL = v => 'R$ ' + v.toFixed(2).replace('.', ',');
-  const el = document.getElementById('invoiceCardContent');
-  if (el) {
-    el.innerHTML = `
-      <div class="inv-row"><span class="inv-label">Referência</span><span class="inv-value">${cfg.billRef}</span></div>
-      <div class="inv-row"><span class="inv-label">Leitura base CORSAN</span><span class="inv-value mono c-blue">${cfg.corsanBase} m³</span></div>
-      <div class="inv-row"><span class="inv-label">Consumo faturado</span><span class="inv-value">${cfg.franchise} m³</span></div>
-      <div class="inv-row"><span class="inv-label">Valor água</span><span class="inv-value">${fmtBRL(cfg.lastBillWater)}</span></div>
-      <div class="inv-row"><span class="inv-label">Custo/m³</span><span class="inv-value c-warn">${fmtBRL(costM3)}/m³</span></div>
-      <div class="inv-row"><span class="inv-label">Taxa fixa</span><span class="inv-value">${fmtBRL(cfg.fixedFee)}</span></div>
-      <div class="inv-row inv-total"><span class="inv-label">Total</span><span class="inv-value">${fmtBRL(total)}</span></div>
-      <div class="inv-fixed">📌 Taxa de serviço: <strong>${fmtBRL(cfg.fixedFee)}/mês</strong> (fixa)</div>
-      <div class="inv-note">✓ Custo/m³: <strong>${fmtBRL(costM3)}</strong> · Ciclo: ${cfg.cycleDays} dias</div>
-    `;
-  }
-  // Update section title
-  const sec = document.getElementById('invoiceSecTitle');
-  if (sec) sec.childNodes[0].textContent = 'Fatura ' + cfg.billRef;
-  // Update gauge sub
-  const gs = document.getElementById('gaugeSub');
-  if (gs) gs.innerHTML = 'Franquia: ' + cfg.franchise + ' m³<br>' + fmtBRL(total);
+/* ══ TOAST ══ */
+function showToast(msg,color){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.style.color=color||'var(--t1)';
+  el.style.borderColor=(color||'#38bdf8')+'55';
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);
 }
 
-/* ── INIT ── */
-updateInvoiceCard();
-updateAll();
-renderTable();
-setTimeout(renderChart, 80);
-window.addEventListener('resize', renderChart);
+/* ══ INIT ══ */
+updateWater();
+renderWaterTable();
+renderExps();
+setTimeout(()=>{renderWaterChart();renderExpChart({})},80);
+window.addEventListener('resize',()=>{renderWaterChart();const ct={};Object.keys(CATS).forEach(c=>ct[c]=0);expenses.forEach(e=>{if(ct[e.cat]!==undefined)ct[e.cat]+=e.val});renderExpChart(ct)});
 </script>
 </body>
 </html>
